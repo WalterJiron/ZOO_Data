@@ -190,5 +190,9 @@ BEGIN
         DateDelete = NULL
     WHERE CodigoEspecie = @CodigoEspecie;
 
+<<<<<<< HEAD
     SET @Mensaje = 'Especie eliminada correctamente';
+=======
+    SET @Mensaje = 'Se restauro la especie correctamente';
+>>>>>>> 4721b142adafa9016a32b5546bf1fb2145f31462
 END;
