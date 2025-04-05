@@ -24,6 +24,8 @@ BEGIN
     SET @Mensaje = 'Continente insertado correctamente';
 END;
 
+GO
+
 --------------------------------- actualizar continente -------------------------------------
 CREATE PROC ProcUpdateContinente
     @IdCont INT,
@@ -39,7 +41,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Continente WHERE IdCont = @IdCont)
     BEGIN
-        SET @Mensaje = 'No se encontró el continente con el ID especificado';
+        SET @Mensaje = 'No se encontrï¿½ el continente con el ID especificado';
         RETURN;
     END
 
@@ -56,6 +58,8 @@ BEGIN
     SET @Mensaje = 'Continente actualizado correctamente';
 END;
 
+GO
+
 -------------------------- eliminar continente -------------------------------
 CREATE PROC ProcDeleteContinente
     @IdCont INT,
@@ -64,7 +68,7 @@ AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Continente WHERE IdCont = @IdCont)
     BEGIN
-        SET @Mensaje = 'No se encontró el continente con el ID especificado';
+        SET @Mensaje = 'No se encontrï¿½ el continente con el ID especificado';
         RETURN;
     END
 
@@ -73,7 +77,3 @@ BEGIN
 
     SET @Mensaje = 'Continente eliminado correctamente';
 END;
-GO
-
-
-GO

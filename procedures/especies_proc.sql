@@ -23,13 +23,13 @@ BEGIN
 
     IF LEN(@NombreCientifico) < 3
     BEGIN
-        SET @Mensaje = 'El nombre científico debe tener al menos 3 caracteres';
+        SET @Mensaje = 'El nombre cientï¿½fico debe tener al menos 3 caracteres';
         RETURN;
     END
 
     IF LEN(@Descripcion) < 10
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'La descripciï¿½n debe tener al menos 10 caracteres';
         RETURN;
     END
 
@@ -45,6 +45,8 @@ BEGIN
     SET @Mensaje = 'Especie insertada correctamente';
 END;
 
+GO
+
 --------------------------- actualizar especie ------------------------------
 CREATE PROC ProcUpdateEspecie
     @CodigoEspecie UNIQUEIDENTIFIER,
@@ -54,27 +56,44 @@ CREATE PROC ProcUpdateEspecie
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Especie WHERE CodigoEspecie = @CodigoEspecie AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'La especie no existe o está eliminada';
-        RETURN;
-    END
-
-    IF @NuevoNombre IS NULL OR @NuevoCientifico IS NULL OR @NuevaDescripcion IS NULL
+    IF @CodigoEspecie IS NULL OR @NuevoNombre IS NULL OR @NuevoCientifico IS NULL OR @NuevaDescripcion IS NULL
     BEGIN
         SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    IF LEN(@NuevoNombre) < 3 OR LEN(@NuevoCientifico) < 3
+    -- Buscar el codigo
+    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
+    
+
+    IF @codigo_exist IS NULL
     BEGIN
-        SET @Mensaje = 'Los nombres deben tener al menos 3 caracteres';
+        SET @Mensaje = 'La especie no existe';
         RETURN;
     END
 
-    IF LEN(@NuevaDescripcion) < 10
+    IF @codigo_exist = 0
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'La especie esta eliminada.';
+        RETURN;
+    END
+
+    IF LEN(@NuevoNombre) < 3 
+    BEGIN
+        SET @Mensaje = 'Lo nombre deben tener al menos 3 caracteres';
+        RETURN;
+    END
+
+    IF LEN(@NuevoCientifico) < 3
+    BEGIN
+        SET @Mensaje = 'El nombre cientifico deben tener al menos 3 caracteres';
+        RETURN;
+    END
+
+    IF LEN(@NuevaDescripcion) < 10 
+    BEGIN
+        SET @Mensaje = 'La descripciï¿½n debe tener al menos 10 caracteres';
         RETURN;
     END
 
@@ -87,8 +106,8 @@ BEGIN
         RETURN;
     END
 
-    UPDATE Especie
-    SET Nombre = @NuevoNombre,
+    UPDATE Especie SET
+        Nombre = @NuevoNombre,
         NameCientifico = @NuevoCientifico,
         Descripcion = @NuevaDescripcion
     WHERE CodigoEspecie = @CodigoEspecie;
@@ -96,24 +115,46 @@ BEGIN
     SET @Mensaje = 'Especie actualizada correctamente';
 END;
 
+GO
+
 ------------------------------ eliminar especie ------------------------
 CREATE PROC ProcDeleteEspecie
     @CodigoEspecie UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Especie WHERE CodigoEspecie = @CodigoEspecie AND Estado = 1)
+    IF @CodigoEspecie IS NULL
     BEGIN
-        SET @Mensaje = 'La especie no existe o ya está eliminada';
+        SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    UPDATE Especie
-    SET Estado = 0, DateDelete = GETDATE()
+    -- Buscar el codigo
+    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
+    
+    
+    IF @codigo_exist IS NULL
+    BEGIN
+        SET @Mensaje = 'La especie no existe';
+        RETURN;
+    END
+
+    IF @codigo_exist = 0
+    BEGIN
+        SET @Mensaje = 'La especie ya esta eliminada.';
+        RETURN;
+    END
+
+    UPDATE Especie SET
+        Estado = 0, 
+        DateDelete = GETDATE()
     WHERE CodigoEspecie = @CodigoEspecie;
 
     SET @Mensaje = 'Especie eliminada correctamente';
 END;
+
+GO
 
 ------------------------------------- restauracion de especie eliminada --------------------------
 CREATE PROC ProcRestoreEspecie
@@ -121,15 +162,33 @@ CREATE PROC ProcRestoreEspecie
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Especie WHERE CodigoEspecie = @CodigoEspecie AND Estado = 0)
+    IF @CodigoEspecie IS NULL
     BEGIN
-        SET @Mensaje = 'La especie no existe o ya está activa';
+        SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    UPDATE Especie
-    SET Estado = 1, DateDelete = NULL
+    -- Buscar el codigo
+    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
+    
+    
+    IF @codigo_exist IS NULL
+    BEGIN
+        SET @Mensaje = 'La especie no existe';
+        RETURN;
+    END
+
+    IF @codigo_exist = 1
+    BEGIN
+        SET @Mensaje = 'La especie ya esta activa.';
+        RETURN;
+    END
+
+    UPDATE Especie SET
+        Estado = 1, 
+        DateDelete = NULL
     WHERE CodigoEspecie = @CodigoEspecie;
 
-    SET @Mensaje = 'Especie restaurada correctamente';
+    SET @Mensaje = 'Especie eliminada correctamente';
 END;
