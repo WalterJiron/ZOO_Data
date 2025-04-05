@@ -131,5 +131,5 @@ BEGIN
     SET Estado = 1, DateDelete = NULL
     WHERE CodigoEspecie = @CodigoEspecie;
 
-    SET @Mensaje = 'Especie restaurada correctamente';
+    SET @Mensaje = 'Se restauro la especie correctamente';
 END;

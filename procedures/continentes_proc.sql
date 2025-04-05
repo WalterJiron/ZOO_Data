@@ -74,6 +74,3 @@ BEGIN
     SET @Mensaje = 'Continente eliminado correctamente';
 END;
 GO
-
-
-GO

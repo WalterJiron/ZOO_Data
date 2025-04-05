@@ -2,36 +2,42 @@
 
 
 ---------------------------------insertar zona -----------------------------
+-- Procedimiento para insertar una nueva zona
 CREATE PROC ProcInsertZona
     @NameZona NVARCHAR(100),
     @Extension DECIMAL(10,2),
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
+    -- Validar que los campos no sean nulos
     IF @NameZona IS NULL OR @Extension IS NULL
     BEGIN
         SET @Mensaje = 'Los campos no pueden estar vacíos';
         RETURN;
     END
 
+    -- Validar longitud mínima del nombre
     IF LEN(@NameZona) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
+    -- Validar que la extensión sea mayor a 0
     IF @Extension <= 0
     BEGIN
         SET @Mensaje = 'La extensión debe ser mayor a 0';
         RETURN;
     END
 
+    -- Verificar si ya existe una zona activa con ese nombre
     IF EXISTS (SELECT 1 FROM Zona WHERE NameZona = @NameZona AND EstadoZona = 1)
     BEGIN
         SET @Mensaje = 'Ya existe una zona activa con ese nombre';
         RETURN;
     END
 
+    -- Insertar la nueva zona (EstadoZona tiene valor por defecto)
     INSERT INTO Zona (NameZona, Extension)
     VALUES (@NameZona, @Extension);
 
@@ -40,6 +46,7 @@ END;
 GO
 
 ------------------------ actualizar zona -----------------------------------------------------
+
 CREATE PROC ProcUpdateZona
     @CodigoZona UNIQUEIDENTIFIER,
     @NameZona NVARCHAR(100),
@@ -47,24 +54,28 @@ CREATE PROC ProcUpdateZona
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
+    -- Validar que la zona exista y esté activa
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
     BEGIN
         SET @Mensaje = 'La zona no existe o está eliminada';
         RETURN;
     END
 
+    -- Validar longitud mínima del nombre
     IF LEN(@NameZona) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
+    -- Validar que la extensión sea mayor a 0
     IF @Extension <= 0
     BEGIN
         SET @Mensaje = 'La extensión debe ser mayor a 0';
         RETURN;
     END
 
+    -- Actualizar los datos de la zona
     UPDATE Zona
     SET NameZona = @NameZona,
         Extension = @Extension
@@ -75,17 +86,20 @@ END;
 GO
 
 -------------------------------- eliminar zona ---------------------------------------
+
 CREATE PROC ProcDeleteZona
     @CodigoZona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
+    -- Validar existencia y estado de la zona
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
     BEGIN
         SET @Mensaje = 'La zona no existe o ya está eliminada';
         RETURN;
     END
 
+    -- Marcar la zona como eliminada
     UPDATE Zona
     SET EstadoZona = 0,
         DateDelete = GETDATE()
@@ -96,17 +110,20 @@ END;
 GO
 
 -------------------------------- recuperar zona ---------------------------------------
+
 CREATE PROC ProcRecoverZona
     @CodigoZona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
+    -- Validar si la zona está eliminada
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 0)
     BEGIN
         SET @Mensaje = 'La zona no está eliminada o no existe';
         RETURN;
     END
 
+    -- Restaurar zona a estado activo
     UPDATE Zona
     SET EstadoZona = 1,
         DateDelete = NULL
