@@ -209,7 +209,7 @@ BEGIN
     END
 
     -- Buscamos el usuario
-    DECLARE @user_exis AS UNIQUEIDENTIFIER;
+    DECLARE @user_exis AS BIT;
     SET @user_exis = (SELECT EstadoUser FROM Users WHERE CodigoUser = @CodigoUser);
 
     IF @user_exis IS NULL
@@ -249,7 +249,7 @@ BEGIN
     END
 
     -- Buscamos el usuario
-    DECLARE @user_exis AS UNIQUEIDENTIFIER;
+    DECLARE @user_exis AS BIT;
     SET @user_exis = (SELECT EstadoUser FROM Users WHERE CodigoUser = @CodigoUser);
 
     IF @user_exis IS NULL

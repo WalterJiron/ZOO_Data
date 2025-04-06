@@ -120,7 +120,7 @@ BEGIN
     END
 
     -- Buscamos el rol
-    DECLARE @rol_exis AS UNIQUEIDENTIFIER;
+    DECLARE @rol_exis AS BIT;
     SET @rol_exis = (SELECT EstadoRol FROM Rol WHERE CodigoRol = @CodigoRol);
 
     IF @rol_exis IS NULL
@@ -160,7 +160,7 @@ BEGIN
     END
 
     -- Buscamos el rol
-    DECLARE @rol_exis AS UNIQUEIDENTIFIER;
+    DECLARE @rol_exis AS BIT;
     SET @rol_exis = (SELECT EstadoRol FROM Rol WHERE CodigoRol = @CodigoRol);
 
     IF @rol_exis IS NULL
