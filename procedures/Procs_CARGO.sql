@@ -10,7 +10,7 @@ CREATE PROCEDURE Insertar_Cargo
 AS
 BEGIN
 	---VALIDAR QUE NO SEA NULO
-	IF(@NombreC IS NULL)
+	IF @NombreC IS NULL
 	BEGIN
 		SET @MENSAJE='No puede ser nulo';
 		RETURN;
@@ -32,10 +32,10 @@ BEGIN
     END
 
     -- Insertar el nuevo cargo con estado activo (1)
-    INSERT INTO Cargo (NombreCargo, DescripCargo, EstadoCargo)
-    VALUES (@NombreC, @DescripcionC, 1);
+    INSERT INTO Cargo (NombreCargo, DescripCargo)
+    VALUES (@NombreC, @DescripcionC);
 
-    -- Mensaje de éxito
+    -- Mensaje de ï¿½xito
     SET @MENSAJE = 'Insercion realizada con exito';
 END;
 GO
@@ -48,10 +48,27 @@ CREATE PROCEDURE UPDATE_CARGO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+    IF @NombreC IS NULL OR LTRIM(RTRIM(@NombreC)) = '' OR @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
+    BEGIN
+        SET @MENSAJE = 'El nombre o la descripcion no pueden estar vacios';
+        RETURN;
+    END
+
+    -- Buscamos el codigo del cargo
+    DECLARE @cargo_exist AS BIT;
+    SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);
+
     -- Verificar si el cargo existe
-    IF NOT EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC)
+    IF @cargo_exist IS NULL
     BEGIN
         SET @MENSAJE = 'El cargo no existe';
+        RETURN;
+    END
+
+    -- Verificar si el cargo esta activo
+    IF @cargo_exist = 0
+    BEGIN
+        SET @MENSAJE = 'El cargo se encuentra inactivo';
         RETURN;
     END
 
@@ -62,29 +79,16 @@ BEGIN
         RETURN;
     END
 
-    -- Verificar si la descripcion es valida
-    IF @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
-    BEGIN
-        SET @MENSAJE = 'La descripcion no puede estar vacia';
-        RETURN;
-    END
-
-    -- Verificar si el cargo esta activo
-    IF EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC AND EstadoCargo = 0)
-    BEGIN
-        SET @MENSAJE = 'El cargo se encuentra inactivo';
-        RETURN;
-    END
-
     -- Actualizar los datos del cargo
-    UPDATE Cargo
-    SET NombreCargo = @NombreC,
+    UPDATE Cargo SET
+        NombreCargo = @NombreC,
         DescripCargo = @DescripcionC
     WHERE CodifoCargo = @CDC;
 
     -- Mensaje de exito
     SET @MENSAJE = 'Update realizada con exito';
 END;
+
 GO
 
 ------------------------------------Eliminar CARGO-----------------------
@@ -93,24 +97,28 @@ CREATE PROCEDURE ELIMINAR_CARGO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+    -- Buscado el cargo
+    DECLARE @cargo_exist AS BIT;
+    SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);
+
     -- Verificar si el cargo existe
-    IF NOT EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC)
+    IF @cargo_exist IS NULL
     BEGIN
         SET @MENSAJE = 'El cargo no esta registrado';
         RETURN;
     END
 
     -- Verificar si el cargo ya esta inactivo
-    IF EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC AND EstadoCargo = 0)
+    IF @cargo_exist = 0
     BEGIN
         SET @MENSAJE = 'El cargo ya se encuentra inactivo';
         RETURN;
     END
 
     -- Desactivar el cargo
-    UPDATE Cargo
-    SET EstadoCargo = 0,
-		DateDelete=GETDATE()
+    UPDATE Cargo SET
+        EstadoCargo = 0,
+		DateDelete = GETDATE()
     WHERE CodifoCargo = @CDC;
 
     -- Mensaje de exito
@@ -125,25 +133,29 @@ CREATE PROCEDURE ACTIVAR_CARGO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+   -- Buscado el cargo
+    DECLARE @cargo_exist AS BIT;
+    SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);
+
     -- Verificar si el cargo existe
-    IF NOT EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC)
+    IF @cargo_exist IS NULL
     BEGIN
         SET @MENSAJE = 'El cargo no esta registrado';
         RETURN;
     END
 
     -- Verificar si el cargo ya esta inactivo
-    IF EXISTS (SELECT 1 FROM Cargo WHERE CodifoCargo = @CDC AND EstadoCargo = 1)
+    IF @cargo_exist = 0
     BEGIN
-        SET @MENSAJE = 'El cargo ya se encuentra activo';
+        SET @MENSAJE = 'El cargo ya se encuentra inactivo';
         RETURN;
     END
 
-    -- Activar el cargo
-    UPDATE Cargo
-    SET EstadoCargo = 1
+    -- Desactivar el cargo
+    UPDATE Cargo SET
+        EstadoCargo = 0,
+		DateDelete = NULL
     WHERE CodifoCargo = @CDC;
-
     -- Mensaje de exito
     SET @MENSAJE = 'Activacion con exito';
 END;

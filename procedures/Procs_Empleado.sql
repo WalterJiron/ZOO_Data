@@ -1,4 +1,6 @@
-use ZOO
+use ZOO;
+
+GO
 
 ------------------------------------INSERCCION EN LA TABLA EMPLEADO-------------------------------------
 CREATE PROCEDURE INSERCCION_EMPLEADO
@@ -10,34 +12,71 @@ CREATE PROCEDURE INSERCCION_EMPLEADO
     @TELEFONO VARCHAR(8),
     @EMAIL NVARCHAR(100),
     @FECHAINGRE DATE,
+    @IdCargo UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Verificar si la direccion, telefono o email ya estan registrados
-    IF EXISTS (SELECT 1 FROM Empleado WHERE DireccionE = @DIREMPLEADO)
-    BEGIN
-        SET @MENSAJE = 'La direccion ya esta registrada';
-        RETURN;
-    END
-
-    IF EXISTS (SELECT 1 FROM Empleado WHERE TelefonoE = @TELEFONO)
-    BEGIN
-        SET @MENSAJE = 'El telefono ya se encuentra registrado';
-        RETURN;
-    END
-
-    IF EXISTS (SELECT 1 FROM Empleado WHERE EmailE = @EMAIL)
-    BEGIN
-        SET @MENSAJE = 'El email ya esta registrado';
-        RETURN;
-    END
-
     -- Validar que los datos obligatorios no sean vacios o nulos
-	--len sirve para ver la longitud
-    IF (LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR 
-        LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0)
+    --len sirve para ver la longitud
+    IF (LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
+        LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
     BEGIN
-        SET @MENSAJE = 'No pueden ser valores nulos';
+        SET @MENSAJE = 'Los campos no pueden ser valores nulos';
+        RETURN;
+    END
+
+    -- Validamos que el cargo exista
+    IF LEN(@PrimerNE) < 3 OR LEN(@SegundoNE) < 3 OR LEN(@PrimerAE) < 3 OR LEN(@SegundoAE) < 3
+    BEGIN
+        SET @MENSAJE = 'Los nombres y apellidos deben tener al menos 3 caracteres';
+        RETURN;
+    END
+
+    -- Validamos que el cargo exista
+    IF LEN(@PrimerNE) > 25 OR LEN(@SegundoNE) > 25 OR LEN(@PrimerAE) > 25 OR LEN(@SegundoAE) > 25
+    BEGIN
+        SET @MENSAJE = 'Los nombres y apellidos no pueden tener mas de 25 caracteres';
+        RETURN;
+    END
+
+    -- Validamos que el cargo exista
+    IF LEN(@DIREMPLEADO) < 5
+    BEGIN
+        SET @MENSAJE = 'La direccion debe tener al menos 5 caracteres';
+        RETURN;
+    END
+
+    -- Validamos que el cargo exista
+    DECLARE @cargo_existe BIT;
+    SET @cargo_existe = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @IdCargo);
+
+    IF (@cargo_existe IS NULL)
+    BEGIN
+        SET @MENSAJE = 'El cargo no existe';
+        RETURN;
+    END
+
+    -- Miramso que el cargo este activo
+    IF (@cargo_existe = 0)
+    BEGIN
+        SET @MENSAJE = 'El cargo no esta activo';
+        RETURN;
+    END
+
+    ------------------------- Verificar si la telefono o email ya estan registrados -------------------------
+    DECLARE @CampoDuplicado NVARCHAR(15);
+    SELECT TOP 1
+        @CampoDuplicado = 
+            CASE 
+                WHEN TelefonoE = @TELEFONO THEN 'telefono'
+                WHEN EmailE = @EMAIL THEN 'email'
+            END
+    FROM Empleado
+    WHERE DireccionE = @DIREMPLEADO OR TelefonoE = @TELEFONO OR EmailE = @EMAIL;
+
+    IF @CampoDuplicado IS NOT NULL
+    BEGIN
+        SET @MENSAJE = 'El ' + @CampoDuplicado + ' ya está registrado';
         RETURN;
     END
 
@@ -56,84 +95,132 @@ BEGIN
     END
 
     -- Insertar empleado
-    INSERT INTO Empleado (PNE, SNE, PAE, SAE, DireccionE, TelefonoE, EmailE, FechaIngreso, EstadoEmpleado)
-    VALUES (@PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO, @TELEFONO, @EMAIL, @FECHAINGRE, 1);
+    INSERT INTO Empleado
+        (PNE, SNE, PAE, SAE, DireccionE, TelefonoE, EmailE, FechaIngreso, IdCargo)
+    VALUES
+        (
+            @PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO,
+            @TELEFONO, @EMAIL, @FECHAINGRE, @IdCargo
+    );
 
     SET @MENSAJE = 'Inserccion realizada con exito';
 END;
-GO
 
+GO
 
 -------------------------------update empleado--------------------------------------
 CREATE PROCEDURE UPDATE_EMPLEADO
-@CDC UNIQUEIDENTIFIER,   
-@PrimerNE NVARCHAR(25),
-@SegundoNE NVARCHAR(25),
-@PrimerAE NVARCHAR(25),
-@SegundoAE NVARCHAR(25),
-@DIREMPLEADO NVARCHAR(200),
-@TELEFONO VARCHAR(8),
-@EMAIL NVARCHAR(100),
-@FECHAINGRE DATE,
-@MENSAJE VARCHAR(100) OUTPUT
+    @CDE UNIQUEIDENTIFIER,
+    @PrimerNE NVARCHAR(25),
+    @SegundoNE NVARCHAR(25),
+    @PrimerAE NVARCHAR(25),
+    @SegundoAE NVARCHAR(25),
+    @DIREMPLEADO NVARCHAR(200),
+    @TELEFONO VARCHAR(8),
+    @EMAIL NVARCHAR(100),
+    @FECHAINGRE DATE,
+    @IdCargo UNIQUEIDENTIFIER,
+    @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+    -- Validar que los datos obligatorios no sean vacios o nulos
+    --len sirve para ver la longitud
+    IF (LEN(@CDE)=0 OR LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
+        LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
+    BEGIN
+        SET @MENSAJE = 'Los campos no pueden ser valores nulos';
+        RETURN;
+    END
+
+    -- Validamos que el empleado exista
+    DECLARE @empleado_existe BIT;
+    SET @empleado_existe = (SELECT EstadoEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
+
     -- Verificar si el empleado existe
-    IF NOT EXISTS (SELECT 1 FROM Empleado WHERE CodigEmpleado = @CDC)
+    IF(@empleado_existe IS NULL)
     BEGIN
-        SET @MENSAJE = 'El empleado no existe';
+        SET @MENSAJE = 'El empleado no esta registrado';
         RETURN;
     END
 
-    -- Validar valores unicos
-    IF EXISTS (SELECT 1 FROM Empleado WHERE DireccionE = @DIREMPLEADO AND CodigEmpleado <> @CDC)
+    -- Miramos que este activo (Empleado)
+    IF(@empleado_existe = 0)
     BEGIN
-        SET @MENSAJE = 'La direccion ya esta registrada';
+        SET @MENSAJE = 'El empleado ya esta inactivo';
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM Empleado WHERE TelefonoE = @TELEFONO AND CodigEmpleado <> @CDC)
+    -- Validamos que el cargo exista
+    IF LEN(@PrimerNE) < 3 OR LEN(@SegundoNE) < 3 OR LEN(@PrimerAE) < 3 OR LEN(@SegundoAE) < 3
     BEGIN
-        SET @MENSAJE = 'El telefono ya este registrado';
+        SET @MENSAJE = 'Los nombres y apellidos deben tener al menos 3 caracteres';
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM Empleado WHERE EmailE = @EMAIL AND CodigEmpleado <> @CDC)
+    -- Validamos que el cargo exista
+    IF LEN(@PrimerNE) > 25 OR LEN(@SegundoNE) > 25 OR LEN(@PrimerAE) > 25 OR LEN(@SegundoAE) > 25
     BEGIN
-        SET @MENSAJE = 'El correo electronico ya esta registrado';
+        SET @MENSAJE = 'Los nombres y apellidos no pueden tener mas de 25 caracteres';
         RETURN;
     END
 
-    -- Validacion de datos vacios o nulos
-    IF (@PrimerNE IS NULL OR @PrimerNE = '' OR 
-        @SegundoNE IS NULL OR @SegundoNE = '' OR 
-        @PrimerAE IS NULL OR @PrimerAE = '' OR 
-        @SegundoAE IS NULL OR @SegundoAE = '' OR 
-        @DIREMPLEADO IS NULL OR @DIREMPLEADO = '' OR 
-        @TELEFONO IS NULL OR @TELEFONO = '' OR 
-        @EMAIL IS NULL OR @EMAIL = '')
+    -- Validamos que el cargo exista
+    IF LEN(@DIREMPLEADO) < 5
     BEGIN
-        SET @MENSAJE = 'Ningun campo puede estar vacio o nulo';
+        SET @MENSAJE = 'La direccion debe tener al menos 5 caracteres';
         RETURN;
     END
 
-    -- Validacion del formato de telefono
-    IF(@TELEFONO NOT LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
+    -- Validamos que el cargo exista
+    DECLARE @cargo_existe BIT;
+    SET @cargo_existe = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @IdCargo);
+
+    IF (@cargo_existe IS NULL)
     BEGIN
-        SET @MENSAJE = 'El primer digito del telefono debe ser 2, 5, 7 o 8';
+        SET @MENSAJE = 'El cargo no existe';
         RETURN;
     END
 
-    -- Validacion de la fecha de ingreso
-    IF(@FECHAINGRE > GETDATE() OR @FECHAINGRE < '1900-01-01')
+    -- Miramso que el cargo este activo
+    IF (@cargo_existe = 0)
     BEGIN
-        SET @MENSAJE = 'La fecha de ingreso no es valida';
+        SET @MENSAJE = 'El cargo no esta activo';
+        RETURN;
+    END
+
+    ------------------------- Verificar si la telefono o email ya estan registrados -------------------------
+    DECLARE @CampoDuplicado NVARCHAR(15);
+    SELECT TOP 1
+        @CampoDuplicado = 
+            CASE 
+                WHEN TelefonoE = @TELEFONO THEN 'telefono'
+                WHEN EmailE = @EMAIL THEN 'email'
+            END
+    FROM Empleado
+    WHERE DireccionE = @DIREMPLEADO OR TelefonoE = @TELEFONO OR EmailE = @EMAIL;
+
+    IF @CampoDuplicado IS NOT NULL
+    BEGIN
+        SET @MENSAJE = 'El ' + @CampoDuplicado + ' ya está registrado';
+        RETURN;
+    END
+
+    -- Validar que el telefono comience con 2, 5, 7 u 8
+    IF (@TELEFONO NOT LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        SET @MENSAJE = 'El primer digito debe ser 2,5,7 u 8';
+        RETURN;
+    END
+
+    -- Validar que la fecha de ingreso no sea mayor a la actual
+    IF (@FECHAINGRE > GETDATE())
+    BEGIN
+        SET @MENSAJE = 'La fecha no puede ser superior a la actual';
         RETURN;
     END
 
     -- Realizar la actualizacion
-    UPDATE Empleado
-    SET 
+    UPDATE Empleado SET
         PNE = @PrimerNE,
         SNE = @SegundoNE,
         PAE = @PrimerAE,
@@ -141,33 +228,21 @@ BEGIN
         DireccionE = @DIREMPLEADO,
         TelefonoE = @TELEFONO,
         EmailE = @EMAIL,
-        FechaIngreso = @FECHAINGRE
-    WHERE CodigEmpleado = @CDC;
+        FechaIngreso = @FECHAINGRE,
+        IdCargo = @IdCargo
+    WHERE CodigEmpleado = @CDE;
 
     SET @MENSAJE = 'Actualizacion realizada con exito';
-END
-GO
+END;
 
+GO
 
 -----------------------------ELIMINAR EMPLEADO----------------------------------
 CREATE PROC ELIMINAR_EMPLEADO
-@CDE UNIQUEIDENTIFIER,
-@MENSAJE VARCHAR(100) OUTPUT
+    @CDE UNIQUEIDENTIFIER,
+    @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-    DECLARE @CodigoEmpleado AS UNIQUEIDENTIFIER
-    SET @CodigoEmpleado = (SELECT CodigEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
-
-    DECLARE @ESTADOE AS BIT
-    SET @ESTADOE = (SELECT EstadoEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
-
-    -- Verificar si el empleado existe
-    IF(@CodigoEmpleado IS NULL)
-    BEGIN
-        SET @MENSAJE = 'El empleado no esta registrado';
-        RETURN;
-    END
-
     -- Validar si el codigo es nulo
     IF(@CDE IS NULL)
     BEGIN
@@ -175,43 +250,40 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @empleado_existe AS BIT;
+    SET @empleado_existe = (SELECT EstadoEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
+
+    -- Verificar si el empleado existe
+    IF(@empleado_existe IS NULL)
+    BEGIN
+        SET @MENSAJE = 'El empleado no esta registrado';
+        RETURN;
+    END
+
     -- Verificar si el empleado ya esta inactivo
-    IF(@ESTADOE = 0)
+    IF(@empleado_existe = 0)
     BEGIN
         SET @MENSAJE = 'El empleado ya esta inactivo';
         RETURN;
     END
 
     -- Actualizar el estado a inactivo
-    UPDATE Empleado 
-    SET EstadoEmpleado = 0,
+    UPDATE Empleado set
+        EstadoEmpleado = 0,
 		DateDelete=GETDATE()--ACTUALIZAMOS SU FECHA DE ELIMINACION
     WHERE CodigEmpleado = @CDE;
 
     SET @MENSAJE = 'Eliminacion realizada con exito';
-END
-GO
+END;
 
+GO
 
 -------------------------------ACTIVAR EMPLEADO---------------------------
 CREATE PROC ACTIVAREMPLEADO
-@CDE UNIQUEIDENTIFIER,
-@MENSAJE VARCHAR(100) OUTPUT
+    @CDE UNIQUEIDENTIFIER,
+    @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-    DECLARE @CodigoEmpleado AS UNIQUEIDENTIFIER
-    SET @CodigoEmpleado = (SELECT CodigEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
-
-    DECLARE @ESTADOE AS BIT
-    SET @ESTADOE = (SELECT EstadoEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
-
-    -- Verificar si el empleado existe
-    IF(@CodigoEmpleado IS NULL)
-    BEGIN
-        SET @MENSAJE = 'El empleado no esta registrado';
-        RETURN;
-    END
-
     -- Validar si el codigo es nulo
     IF(@CDE IS NULL)
     BEGIN
@@ -219,22 +291,28 @@ BEGIN
         RETURN;
     END
 
-    -- Verificar si el empleado ya esta activo
-    IF(@ESTADOE = 1)
+    DECLARE @empleado_existe AS BIT;
+    SET @empleado_existe = (SELECT EstadoEmpleado FROM Empleado WHERE CodigEmpleado = @CDE);
+
+    -- Verificar si el empleado existe
+    IF(@empleado_existe IS NULL)
     BEGIN
-        SET @MENSAJE = 'El empleado ya esta activo';
+        SET @MENSAJE = 'El empleado no esta registrado';
         RETURN;
     END
 
-    -- Actualizar el estado a activo
-    UPDATE Empleado 
-    SET EstadoEmpleado = 1
+    -- Verificar si el empleado ya esta inactivo
+    IF(@empleado_existe = 0)
+    BEGIN
+        SET @MENSAJE = 'El empleado ya esta inactivo';
+        RETURN;
+    END
+
+    -- Actualizar el estado a inactivo
+    UPDATE Empleado set
+        EstadoEmpleado = 1,
+		DateDelete= NULL
     WHERE CodigEmpleado = @CDE;
 
     SET @MENSAJE = 'Activacion realizada con exito';
-END
-GO
-
-
-
----------------SKIBIDIIIII-------
+END;

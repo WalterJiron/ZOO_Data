@@ -40,7 +40,7 @@ BEGIN
     INSERT INTO GuiaItinerario (Empleado, Itinerario, EstadoGI)
     VALUES (@IdEmpleado, @IdItinerario, 1);
 
-    SET @MENSAJE = 'Inserción realizada correctamente';
+    SET @MENSAJE = 'Inserciï¿½n realizada correctamente';
 END
 
 
