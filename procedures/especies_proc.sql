@@ -63,7 +63,7 @@ BEGIN
     END
 
     -- Buscar el codigo
-    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    DECLARE @codigo_exist AS BIT;
     SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
     
 
@@ -130,7 +130,7 @@ BEGIN
     END
 
     -- Buscar el codigo
-    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    DECLARE @codigo_exist AS BIT;
     SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
     
     
@@ -169,7 +169,7 @@ BEGIN
     END
 
     -- Buscar el codigo
-    DECLARE @codigo_exist AS UNIQUEIDENTIFIER;
+    DECLARE @codigo_exist AS BIT;
     SET @codigo_exist = (SELECT Estado FROM Especie WHERE CodigoEspecie = @CodigoEspecie);
     
     
@@ -190,9 +190,5 @@ BEGIN
         DateDelete = NULL
     WHERE CodigoEspecie = @CodigoEspecie;
 
-<<<<<<< HEAD
-    SET @Mensaje = 'Especie eliminada correctamente';
-=======
-    SET @Mensaje = 'Se restauro la especie correctamente';
->>>>>>> 4721b142adafa9016a32b5546bf1fb2145f31462
+    SET @Mensaje = 'Se restauro la especie correctamente'; 
 END;

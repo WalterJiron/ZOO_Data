@@ -76,9 +76,5 @@ BEGIN
     WHERE IdCont = @IdCont;
 
     SET @Mensaje = 'Continente eliminado correctamente';
-<<<<<<< HEAD
-END;
-=======
 END;
 GO
->>>>>>> 4721b142adafa9016a32b5546bf1fb2145f31462

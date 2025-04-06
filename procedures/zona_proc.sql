@@ -12,21 +12,35 @@ BEGIN
     -- Validar que los campos no sean nulos
     IF @NameZona IS NULL OR @Extension IS NULL
     BEGIN
-        SET @Mensaje = 'Los campos no pueden estar vacíos';
+        SET @Mensaje = 'Los campos no pueden estar vacï¿½os';
         RETURN;
     END
 
-    -- Validar longitud mínima del nombre
+    -- Miramos que el nombre no contenga caracteres especiales 
+    IF @NameZona LIKE '%[^a-zA-Z0-9 ]%'
+    BEGIN
+        SET @Mensaje = 'El nombre no puede contener caracteres especiales';
+        RETURN;
+    END
+
+    -- Miramos que la extenxion no sea una letra
+    IF @Extension LIKE '%[^0-9]%'
+    BEGIN
+        SET @Mensaje = 'La extensiï¿½n no puede contener letras';
+        RETURN;
+    END
+
+    -- Validar longitud mï¿½nima del nombre
     IF LEN(@NameZona) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
-    -- Validar que la extensión sea mayor a 0
+    -- Validar que la extensiï¿½n sea mayor a 0
     IF @Extension <= 0
     BEGIN
-        SET @Mensaje = 'La extensión debe ser mayor a 0';
+        SET @Mensaje = 'La extensiï¿½n debe ser mayor a 0';
         RETURN;
     END
 
@@ -54,24 +68,24 @@ CREATE PROC ProcUpdateZona
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
-    -- Validar que la zona exista y esté activa
+    -- Validar que la zona exista y estï¿½ activa
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
     BEGIN
-        SET @Mensaje = 'La zona no existe o está eliminada';
+        SET @Mensaje = 'La zona no existe o estï¿½ eliminada';
         RETURN;
     END
 
-    -- Validar longitud mínima del nombre
+    -- Validar longitud mï¿½nima del nombre
     IF LEN(@NameZona) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
-    -- Validar que la extensión sea mayor a 0
+    -- Validar que la extensiï¿½n sea mayor a 0
     IF @Extension <= 0
     BEGIN
-        SET @Mensaje = 'La extensión debe ser mayor a 0';
+        SET @Mensaje = 'La extensiï¿½n debe ser mayor a 0';
         RETURN;
     END
 
@@ -95,7 +109,7 @@ BEGIN
     -- Validar existencia y estado de la zona
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
     BEGIN
-        SET @Mensaje = 'La zona no existe o ya está eliminada';
+        SET @Mensaje = 'La zona no existe o ya estï¿½ eliminada';
         RETURN;
     END
 
@@ -116,10 +130,10 @@ CREATE PROC ProcRecoverZona
     @Mensaje VARCHAR(150) OUTPUT
 AS
 BEGIN
-    -- Validar si la zona está eliminada
+    -- Validar si la zona estï¿½ eliminada
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 0)
     BEGIN
-        SET @Mensaje = 'La zona no está eliminada o no existe';
+        SET @Mensaje = 'La zona no estï¿½ eliminada o no existe';
         RETURN;
     END
 
