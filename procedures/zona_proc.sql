@@ -5,55 +5,36 @@
 -- Procedimiento para insertar una nueva zona
 CREATE PROC ProcInsertZona
     @NameZona NVARCHAR(100),
-    @Extension DECIMAL(10,2),
-    @Mensaje VARCHAR(150) OUTPUT
+    @Descripcion NVARCHAR(MAX),
+    @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar que los campos no sean nulos
-    IF @NameZona IS NULL OR @Extension IS NULL
+    IF @NameZona IS NULL OR @Descripcion IS NULL
     BEGIN
-        SET @Mensaje = 'Los campos no pueden estar vac�os';
+        SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    -- Miramos que el nombre no contenga caracteres especiales 
-    IF @NameZona LIKE '%[^a-zA-Z0-9 ]%'
-    BEGIN
-        SET @Mensaje = 'El nombre no puede contener caracteres especiales';
-        RETURN;
-    END
-
-    -- Miramos que la extenxion no sea una letra
-    IF @Extension LIKE '%[^0-9]%'
-    BEGIN
-        SET @Mensaje = 'La extensi�n no puede contener letras';
-        RETURN;
-    END
-
-    -- Validar longitud m�nima del nombre
     IF LEN(@NameZona) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
-    -- Validar que la extensi�n sea mayor a 0
-    IF @Extension <= 0
+    IF LEN(@Descripcion) < 10
     BEGIN
-        SET @Mensaje = 'La extensi�n debe ser mayor a 0';
+        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
         RETURN;
     END
 
-    -- Verificar si ya existe una zona activa con ese nombre
     IF EXISTS (SELECT 1 FROM Zona WHERE NameZona = @NameZona AND EstadoZona = 1)
     BEGIN
-        SET @Mensaje = 'Ya existe una zona activa con ese nombre';
+        SET @Mensaje = 'Ya existe una zona con ese nombre';
         RETURN;
     END
 
-    -- Insertar la nueva zona (EstadoZona tiene valor por defecto)
-    INSERT INTO Zona (NameZona, Extension)
-    VALUES (@NameZona, @Extension);
+    INSERT INTO Zona (NameZona, Descripcion)
+    VALUES (@NameZona, @Descripcion);
 
     SET @Mensaje = 'Zona insertada correctamente';
 END;
@@ -63,36 +44,56 @@ GO
 
 CREATE PROC ProcUpdateZona
     @CodigoZona UNIQUEIDENTIFIER,
-    @NameZona NVARCHAR(100),
-    @Extension DECIMAL(10,2),
-    @Mensaje VARCHAR(150) OUTPUT
+    @NuevoNombre NVARCHAR(100),
+    @NuevaDescripcion NVARCHAR(MAX),
+    @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar que la zona exista y est� activa
-    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
+    IF @CodigoZona IS NULL OR @NuevoNombre IS NULL OR @NuevaDescripcion IS NULL
     BEGIN
-        SET @Mensaje = 'La zona no existe o est� eliminada';
+        SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    -- Validar longitud m�nima del nombre
-    IF LEN(@NameZona) < 3
+    DECLARE @existe BIT;
+    SET @existe = (SELECT EstadoZona FROM Zona WHERE CodigoZona = @CodigoZona);
+
+    IF @existe IS NULL
+    BEGIN
+        SET @Mensaje = 'La zona no existe';
+        RETURN;
+    END
+
+    IF @existe = 0
+    BEGIN
+        SET @Mensaje = 'La zona está eliminada';
+        RETURN;
+    END
+
+    IF LEN(@NuevoNombre) < 3
     BEGIN
         SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
-    -- Validar que la extensi�n sea mayor a 0
-    IF @Extension <= 0
+    IF LEN(@NuevaDescripcion) < 10
     BEGIN
-        SET @Mensaje = 'La extensi�n debe ser mayor a 0';
+        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
         RETURN;
     END
 
-    -- Actualizar los datos de la zona
-    UPDATE Zona
-    SET NameZona = @NameZona,
-        Extension = @Extension
+    IF EXISTS (
+        SELECT 1 FROM Zona
+        WHERE NameZona = @NuevoNombre AND CodigoZona != @CodigoZona AND EstadoZona = 1
+    )
+    BEGIN
+        SET @Mensaje = 'Ya existe otra zona activa con ese nombre';
+        RETURN;
+    END
+
+    UPDATE Zona SET
+        NameZona = @NuevoNombre,
+        Descripcion = @NuevaDescripcion
     WHERE CodigoZona = @CodigoZona;
 
     SET @Mensaje = 'Zona actualizada correctamente';
@@ -103,20 +104,33 @@ GO
 
 CREATE PROC ProcDeleteZona
     @CodigoZona UNIQUEIDENTIFIER,
-    @Mensaje VARCHAR(150) OUTPUT
+    @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar existencia y estado de la zona
-    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
+    IF @CodigoZona IS NULL
     BEGIN
-        SET @Mensaje = 'La zona no existe o ya est� eliminada';
+        SET @Mensaje = 'El código de la zona es obligatorio';
         RETURN;
     END
 
-    -- Marcar la zona como eliminada
-    UPDATE Zona
-    SET EstadoZona = 0,
-        DateDelete = GETDATE()
+    DECLARE @estado BIT;
+    SET @estado = (SELECT EstadoZona FROM Zona WHERE CodigoZona = @CodigoZona);
+
+    IF @estado IS NULL
+    BEGIN
+        SET @Mensaje = 'La zona no existe';
+        RETURN;
+    END
+
+    IF @estado = 0
+    BEGIN
+        SET @Mensaje = 'La zona ya está eliminada';
+        RETURN;
+    END
+
+    UPDATE Zona SET
+        EstadoZona = 0,
+        FechaEliminacion = GETDATE()
     WHERE CodigoZona = @CodigoZona;
 
     SET @Mensaje = 'Zona eliminada correctamente';
@@ -125,24 +139,37 @@ GO
 
 -------------------------------- recuperar zona ---------------------------------------
 
-CREATE PROC ProcRecoverZona
+CREATE PROC ProcRestoreZona
     @CodigoZona UNIQUEIDENTIFIER,
-    @Mensaje VARCHAR(150) OUTPUT
+    @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar si la zona est� eliminada
-    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 0)
+    IF @CodigoZona IS NULL
     BEGIN
-        SET @Mensaje = 'La zona no est� eliminada o no existe';
+        SET @Mensaje = 'El código de la zona es obligatorio';
         RETURN;
     END
 
-    -- Restaurar zona a estado activo
-    UPDATE Zona
-    SET EstadoZona = 1,
-        DateDelete = NULL
+    DECLARE @estado BIT;
+    SET @estado = (SELECT EstadoZona FROM Zona WHERE CodigoZona = @CodigoZona);
+
+    IF @estado IS NULL
+    BEGIN
+        SET @Mensaje = 'La zona no existe';
+        RETURN;
+    END
+
+    IF @estado = 1
+    BEGIN
+        SET @Mensaje = 'La zona ya está activa';
+        RETURN;
+    END
+
+    UPDATE Zona SET
+        EstadoZona = 1,
+        FechaEliminacion = NULL
     WHERE CodigoZona = @CodigoZona;
 
-    SET @Mensaje = 'Zona recuperada correctamente';
+    SET @Mensaje = 'Se restauro la zona correctamente';
 END;
 GO
