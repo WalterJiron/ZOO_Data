@@ -1,7 +1,10 @@
---------------------habitad----------
+
+
+
+------------------------------------- ESTA MANLO MIRA BIEN LA DB zoo_database -------------------------------------
 
 --------------------------Insertar Habitat ------------------------
-CREATE PROC ProcInsertHabitat
+CREATE PROC ProcInsertHabitat   -- Mira los campos estan malos
     @Nombre NVARCHAR(100),
     @Clima NVARCHAR(100),
     @Vegetacion NVARCHAR(100),
@@ -28,24 +31,24 @@ BEGIN
 
     IF LEN(@Vegetacion) < 3
     BEGIN
-        SET @Mensaje = 'La vegetación debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La vegetaciï¿½n debe tener al menos 3 caracteres';
         RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM Habitat WHERE Nombre = @Nombre AND Estado = 1)
     BEGIN
-        SET @Mensaje = 'Ya existe un hábitat con ese nombre';
+        SET @Mensaje = 'Ya existe un hï¿½bitat con ese nombre';
         RETURN;
     END
 
     INSERT INTO Habitat (Nombre, Clima, Vegetacion)
     VALUES (@Nombre, @Clima, @Vegetacion);
 
-    SET @Mensaje = 'Hábitat insertado correctamente';
+    SET @Mensaje = 'Hï¿½bitat insertado correctamente';
 END;
 GO
 ------------------- actualizar habitat ----------------------
-CREATE PROC ProcUpdateHabitat
+CREATE PROC ProcUpdateHabitat    -- Mira los campos estan malos
     @CodigoHabitat UNIQUEIDENTIFIER,
     @NuevoNombre NVARCHAR(100),
     @NuevoClima NVARCHAR(100),
@@ -60,17 +63,17 @@ BEGIN
     END
 
     DECLARE @estado BIT;
-    SET @estado = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+    SET @estado = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);   -- Revisa el campo
 
     IF @estado IS NULL
     BEGIN
-        SET @Mensaje = 'El hábitat no existe';
+        SET @Mensaje = 'El hï¿½bitat no existe';
         RETURN;
     END
 
     IF @estado = 0
     BEGIN
-        SET @Mensaje = 'El hábitat está eliminado';
+        SET @Mensaje = 'El hï¿½bitat estï¿½ eliminado';   -- inactivo en vez de eliminado
         RETURN;
     END
 
@@ -88,7 +91,7 @@ BEGIN
 
     IF LEN(@NuevaVegetacion) < 3
     BEGIN
-        SET @Mensaje = 'La vegetación debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La vegetaciï¿½n debe tener al menos 3 caracteres';
         RETURN;
     END
 
@@ -97,7 +100,7 @@ BEGIN
         WHERE Nombre = @NuevoNombre AND CodigoHabitat != @CodigoHabitat AND Estado = 1
     )
     BEGIN
-        SET @Mensaje = 'Ya existe otro hábitat activo con ese nombre';
+        SET @Mensaje = 'Ya existe otro hï¿½bitat activo con ese nombre';
         RETURN;
     END
 
@@ -107,7 +110,7 @@ BEGIN
         Vegetacion = @NuevaVegetacion
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat actualizado correctamente';
+    SET @Mensaje = 'Hï¿½bitat actualizado correctamente';
 END;
 GO
 
@@ -119,7 +122,7 @@ AS
 BEGIN
     IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El código del hábitat es obligatorio';
+        SET @Mensaje = 'El cï¿½digo del hï¿½bitat es obligatorio';
         RETURN;
     END
 
@@ -128,13 +131,13 @@ BEGIN
 
     IF @estado IS NULL
     BEGIN
-        SET @Mensaje = 'El hábitat no existe';
+        SET @Mensaje = 'El hï¿½bitat no existe';
         RETURN;
     END
 
     IF @estado = 0
     BEGIN
-        SET @Mensaje = 'El hábitat ya está eliminado';
+        SET @Mensaje = 'El hï¿½bitat ya estï¿½ eliminado';
         RETURN;
     END
 
@@ -143,7 +146,7 @@ BEGIN
         FechaEliminacion = GETDATE()
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat eliminado correctamente';
+    SET @Mensaje = 'Hï¿½bitat eliminado correctamente';
 END;
 GO
 
@@ -155,7 +158,7 @@ AS
 BEGIN
     IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El código del hábitat es obligatorio';
+        SET @Mensaje = 'El cï¿½digo del hï¿½bitat es obligatorio';
         RETURN;
     END
 
@@ -164,13 +167,13 @@ BEGIN
 
     IF @estado IS NULL
     BEGIN
-        SET @Mensaje = 'El hábitat no existe';
+        SET @Mensaje = 'El hï¿½bitat no existe';
         RETURN;
     END
 
     IF @estado = 1
     BEGIN
-        SET @Mensaje = 'El hábitat ya está activo';
+        SET @Mensaje = 'El hï¿½bitat ya estï¿½ activo';
         RETURN;
     END
 
@@ -179,6 +182,6 @@ BEGIN
         FechaEliminacion = NULL
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat restaurado correctamente';
+    SET @Mensaje = 'Hï¿½bitat restaurado correctamente';
 END;
 GO

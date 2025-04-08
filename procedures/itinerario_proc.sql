@@ -1,6 +1,12 @@
-----itinerario-------
+
+
+------------------------------------- ESTA MANLO MIRA BIEN LA DB zoo_database -------------------------------------
+
+
+
+
 -------------------- Insertar itinerario -------------------------
-CREATE PROC ProcInsertItinerario
+CREATE PROC ProcInsertItinerario   -- Mirar bien los capos de la tabla
     @NameItinerario NVARCHAR(100),
     @Descripcion NVARCHAR(MAX),
     @Duracion TIME,
@@ -21,10 +27,11 @@ BEGIN
 
     IF LEN(@Descripcion) < 10
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'La descripciï¿½n debe tener al menos 10 caracteres';
         RETURN;
     END
 
+    -- No existe un NameItinerario en la tabla Itinerario
     IF EXISTS (SELECT 1 FROM Itinerario WHERE NameItinerario = @NameItinerario AND EstadoItinerario = 1)
     BEGIN
         SET @Mensaje = 'Ya existe un itinerario con ese nombre';
@@ -64,7 +71,7 @@ BEGIN
 
     IF @estado = 0
     BEGIN
-        SET @Mensaje = 'El itinerario está eliminado';
+        SET @Mensaje = 'El itinerario estï¿½ eliminado';
         RETURN;
     END
 
@@ -76,7 +83,7 @@ BEGIN
 
     IF LEN(@NuevaDescripcion) < 10
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'La descripciï¿½n debe tener al menos 10 caracteres';
         RETURN;
     END
 
@@ -107,7 +114,7 @@ AS
 BEGIN
     IF @CodigoItinerario IS NULL
     BEGIN
-        SET @Mensaje = 'El código del itinerario es obligatorio';
+        SET @Mensaje = 'El cï¿½digo del itinerario es obligatorio';
         RETURN;
     END
 
@@ -122,7 +129,7 @@ BEGIN
 
     IF @estado = 0
     BEGIN
-        SET @Mensaje = 'El itinerario ya está eliminado';
+        SET @Mensaje = 'El itinerario ya estï¿½ eliminado';
         RETURN;
     END
 
@@ -144,7 +151,7 @@ AS
 BEGIN
     IF @CodigoItinerario IS NULL
     BEGIN
-        SET @Mensaje = 'El código del itinerario es obligatorio';
+        SET @Mensaje = 'El cï¿½digo del itinerario es obligatorio';
         RETURN;
     END
 
@@ -159,7 +166,7 @@ BEGIN
 
     IF @estado = 1
     BEGIN
-        SET @Mensaje = 'El itinerario ya está activo';
+        SET @Mensaje = 'El itinerario ya estï¿½ activo';
         RETURN;
     END
 

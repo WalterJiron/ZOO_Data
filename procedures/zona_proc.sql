@@ -1,9 +1,14 @@
----------------------zona--------------
+
+
+------------------------------------- ESTA MANLO MIRA BIEN LA DB zoo_database -------------------------------------
+
+
+
 
 
 ---------------------------------insertar zona -----------------------------
 -- Procedimiento para insertar una nueva zona
-CREATE PROC ProcInsertZona
+CREATE PROC ProcInsertZona   -- Los campos estan malos
     @NameZona NVARCHAR(100),
     @Descripcion NVARCHAR(MAX),
     @Mensaje VARCHAR(100) OUTPUT
