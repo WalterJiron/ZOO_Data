@@ -1,38 +1,193 @@
--------------------Continentes--------------------------
+---- PROC CONTINENTE ----
 
---------------------------Insertar Continentes -----------------------------------
-CREATE PROC ProcInsertContinente
-    @Nombre NVARCHAR(50),
-    @Mensaje NVARCHAR(100) OUTPUT
+--	Insertar continente --
+
+CREATE PROCEDURE continente_proc
+    @Accion VARCHAR(10),
+    @CodigoCont UNIQUEIDENTIFIER = NULL,
+    @NombreCont NVARCHAR(100) = NULL,
+    @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Miramos que el nombre no sea nulo o menor a 3 caracteres
-    IF @Nombre IS NULL OR LEN(@Nombre) < 3
+    IF @Accion = 'insert'
     BEGIN
-        SET @Mensaje = 'El nombre del continente debe tener al menos 3 caracteres';
-        RETURN;
+        IF @NombreCont IS NULL OR LEN(@NombreCont) < 3
+        BEGIN
+            SET @Mensaje = 'El nombre del continente debe tener al menos 3 caracteres';
+            RETURN;
+        END
+
+        IF EXISTS (SELECT 1 FROM Continente WHERE NombreCont = @NombreCont AND Estado = 1)
+        BEGIN
+            SET @Mensaje = 'Ya existe un continente activo con ese nombre';
+            RETURN;
+        END
+
+        INSERT INTO Continente (NombreCont)
+        VALUES (@NombreCont);
+
+        SET @Mensaje = 'Continente insertado correctamente';
     END
 
-    -- Miramos que el nombre no este en la DB
-    IF EXISTS (SELECT 1 FROM Continente WHERE Nombre = @Nombre)
+    ELSE IF @Accion = 'update'
     BEGIN
-        SET @Mensaje = 'Ya existe un continente con ese nombre';
-        RETURN;
+        IF @CodigoCont IS NULL
+        BEGIN
+            SET @Mensaje = 'Debe proporcionar el código del continente';
+            RETURN;
+        END
+
+        IF NOT EXISTS (SELECT 1 FROM Continente WHERE CodigoCont = @CodigoCont)
+        BEGIN
+            SET @Mensaje = 'El continente no existe';
+            RETURN;
+        END
+
+        IF @NombreCont IS NULL OR LEN(@NombreCont) < 3
+        BEGIN
+            SET @Mensaje = 'El nuevo nombre debe tener al menos 3 caracteres';
+            RETURN;
+        END
+
+        IF EXISTS (
+            SELECT 1 FROM Continente 
+            WHERE NombreCont = @NombreCont 
+              AND CodigoCont != @CodigoCont 
+              AND Estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'Otro continente activo ya tiene ese nombre';
+            RETURN;
+        END
+
+        UPDATE Continente
+        SET NombreCont = @NombreCont
+        WHERE CodigoCont = @CodigoCont;
+
+        SET @Mensaje = 'Continente actualizado correctamente';
     END
 
-    -- Miramos que el continente sea correcto
-    IF @Nombre NOT IN ('Africa', 'America', 'Asia', 'Europa', 'Oceania')
+    ELSE IF @Accion = 'delete'
     BEGIN
-        SET @Mensaje = 'El continente no es correcto';
-        RETURN;
+        IF @CodigoCont IS NULL
+        BEGIN
+            SET @Mensaje = 'Debe proporcionar el código del continente a eliminar';
+            RETURN;
+        END
+
+        UPDATE Continente
+        SET Estado = 0, DateDelete = GETDATE()
+        WHERE CodigoCont = @CodigoCont;
+
+        SET @Mensaje = 'Continente eliminado correctamente';
     END
 
-    INSERT INTO Continente (Nombre)
-    VALUES (@Nombre);
+    ELSE IF @Accion = 'restore'
+    BEGIN
+        IF @CodigoCont IS NULL
+        BEGIN
+            SET @Mensaje = 'Debe proporcionar el código del continente a restaurar';
+            RETURN;
+        END
 
-    SET @Mensaje = 'Continente insertado correctamente';
+        UPDATE Continente
+        SET Estado = 1, DateDelete = NULL
+        WHERE CodigoCont = @CodigoCont;
+
+        SET @Mensaje = 'Continente restaurado correctamente';
+    END
+
+    ELSE
+    BEGIN
+        SET @Mensaje = 'Acción no válida';
+    END
 END;
 
+-- Actualizar contienente --
+CREATE PROC ProcUpdateContinente
+    @CodigoContinente UNIQUEIDENTIFIER,
+    @NuevoNombre NVARCHAR(100),
+    @Mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+    IF @CodigoContinente IS NULL OR @NuevoNombre IS NULL
+    BEGIN
+        SET @Mensaje = 'Todos los campos son obligatorios';
+        RETURN;
+    END
+
+    IF LEN(@NuevoNombre) < 3
+    BEGIN
+        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        RETURN;
+    END
+
+    DECLARE @EstadoContinente BIT;
+    SET @EstadoContinente = (SELECT Estado FROM Continente WHERE CodigoContinente = @CodigoContinente);
+
+    IF @EstadoContinente IS NULL
+    BEGIN
+        SET @Mensaje = 'El continente no existe';
+        RETURN;
+    END
+
+    IF @EstadoContinente = 0
+    BEGIN
+        SET @Mensaje = 'El continente está eliminado';
+        RETURN;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM Continente
+        WHERE Nombre = @NuevoNombre AND CodigoContinente != @CodigoContinente AND Estado = 1
+    )
+    BEGIN
+        SET @Mensaje = 'Ya existe otro continente activo con ese nombre';
+        RETURN;
+    END
+
+    UPDATE Continente SET Nombre = @NuevoNombre
+    WHERE CodigoContinente = @CodigoContinente;
+
+    SET @Mensaje = 'Continente actualizado correctamente';
+END;
 GO
 
+-- eliminar continente ---
 
+CREATE PROC ProcDeleteContinente
+    @CodigoContinente UNIQUEIDENTIFIER,
+    @Mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+    IF @CodigoContinente IS NULL
+    BEGIN
+        SET @Mensaje = 'El código de continente es obligatorio';
+        RETURN;
+    END
+
+    DECLARE @EstadoContinente BIT;
+    SET @EstadoContinente = (SELECT Estado FROM Continente WHERE CodigoContinente = @CodigoContinente);
+
+    IF @EstadoContinente IS NULL
+    BEGIN
+        SET @Mensaje = 'El continente no existe';
+        RETURN;
+    END
+
+    IF @EstadoContinente = 0
+    BEGIN
+        SET @Mensaje = 'El continente ya está eliminado';
+        RETURN;
+    END
+
+    UPDATE Continente SET Estado = 0, DateDelete = GETDATE()
+    WHERE CodigoContinente = @CodigoContinente;
+
+    SET @Mensaje = 'Continente eliminado correctamente';
+END;
+GO
+
+-- No hay una restauración para continente, 
+-- por lógica puede tratarse como un registro crítico en la jerarquía geográfica. 
+-- Una vez eliminado, solo podría insertarse nuevamente

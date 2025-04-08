@@ -1,17 +1,16 @@
+---- PROC HABITAT -----
 
+-- Insertar Habitat --
 
-
-------------------------------------- ESTA MANLO MIRA BIEN LA DB zoo_database -------------------------------------
-
---------------------------Insertar Habitat ------------------------
-CREATE PROC ProcInsertHabitat   -- Mira los campos estan malos
+CREATE PROC ProcInsertHabitat
     @Nombre NVARCHAR(100),
     @Clima NVARCHAR(100),
-    @Vegetacion NVARCHAR(100),
+    @TipoVegetacion NVARCHAR(100),
+    @Zona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF @Nombre IS NULL OR @Clima IS NULL OR @Vegetacion IS NULL
+    IF @Nombre IS NULL OR @Clima IS NULL OR @TipoVegetacion IS NULL OR @Zona IS NULL
     BEGIN
         SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
@@ -23,57 +22,39 @@ BEGIN
         RETURN;
     END
 
-    IF LEN(@Clima) < 3
+    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @Zona AND Estado = 1)
     BEGIN
-        SET @Mensaje = 'El clima debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La zona no existe o está inactiva';
         RETURN;
     END
 
-    IF LEN(@Vegetacion) < 3
+    IF EXISTS (SELECT 1 FROM Habitat WHERE Nombre = @Nombre AND CodigoZona = @Zona AND Estado = 1)
     BEGIN
-        SET @Mensaje = 'La vegetaci�n debe tener al menos 3 caracteres';
+        SET @Mensaje = 'Ya existe un hábitat con ese nombre en la zona indicada';
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM Habitat WHERE Nombre = @Nombre AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'Ya existe un h�bitat con ese nombre';
-        RETURN;
-    END
+    INSERT INTO Habitat (Nombre, Clima, TipoVegetacion, CodigoZona)
+    VALUES (@Nombre, @Clima, @TipoVegetacion, @Zona);
 
-    INSERT INTO Habitat (Nombre, Clima, Vegetacion)
-    VALUES (@Nombre, @Clima, @Vegetacion);
-
-    SET @Mensaje = 'H�bitat insertado correctamente';
+    SET @Mensaje = 'Hábitat insertado correctamente';
 END;
 GO
-------------------- actualizar habitat ----------------------
-CREATE PROC ProcUpdateHabitat    -- Mira los campos estan malos
+
+-- Actualizar 
+
+CREATE PROC ProcUpdateHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @NuevoNombre NVARCHAR(100),
     @NuevoClima NVARCHAR(100),
     @NuevaVegetacion NVARCHAR(100),
+    @Zona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF @CodigoHabitat IS NULL OR @NuevoNombre IS NULL OR @NuevoClima IS NULL OR @NuevaVegetacion IS NULL
+    IF @CodigoHabitat IS NULL OR @NuevoNombre IS NULL OR @NuevoClima IS NULL OR @NuevaVegetacion IS NULL OR @Zona IS NULL
     BEGIN
         SET @Mensaje = 'Todos los campos son obligatorios';
-        RETURN;
-    END
-
-    DECLARE @estado BIT;
-    SET @estado = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);   -- Revisa el campo
-
-    IF @estado IS NULL
-    BEGIN
-        SET @Mensaje = 'El h�bitat no existe';
-        RETURN;
-    END
-
-    IF @estado = 0
-    BEGIN
-        SET @Mensaje = 'El h�bitat est� eliminado';   -- inactivo en vez de eliminado
         RETURN;
     END
 
@@ -83,38 +64,49 @@ BEGIN
         RETURN;
     END
 
-    IF LEN(@NuevoClima) < 3
+    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @Zona AND Estado = 1)
     BEGIN
-        SET @Mensaje = 'El clima debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La zona no existe o está inactiva';
         RETURN;
     END
 
-    IF LEN(@NuevaVegetacion) < 3
+    DECLARE @EstadoHabitat BIT;
+    SET @EstadoHabitat = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+
+    IF @EstadoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'La vegetaci�n debe tener al menos 3 caracteres';
+        SET @Mensaje = 'El hábitat no existe';
+        RETURN;
+    END
+
+    IF @EstadoHabitat = 0
+    BEGIN
+        SET @Mensaje = 'El hábitat está eliminado';
         RETURN;
     END
 
     IF EXISTS (
         SELECT 1 FROM Habitat
-        WHERE Nombre = @NuevoNombre AND CodigoHabitat != @CodigoHabitat AND Estado = 1
+        WHERE Nombre = @NuevoNombre AND CodigoZona = @Zona AND CodigoHabitat != @CodigoHabitat AND Estado = 1
     )
     BEGIN
-        SET @Mensaje = 'Ya existe otro h�bitat activo con ese nombre';
+        SET @Mensaje = 'Ya existe otro hábitat activo con ese nombre en la misma zona';
         RETURN;
     END
 
     UPDATE Habitat SET
         Nombre = @NuevoNombre,
         Clima = @NuevoClima,
-        Vegetacion = @NuevaVegetacion
+        TipoVegetacion = @NuevaVegetacion,
+        CodigoZona = @Zona
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'H�bitat actualizado correctamente';
+    SET @Mensaje = 'Hábitat actualizado correctamente';
 END;
 GO
 
-------------------- eliminar habitat --------------------------
+-- Eliminar Habitat --
+
 CREATE PROC ProcDeleteHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
@@ -122,35 +114,34 @@ AS
 BEGIN
     IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El c�digo del h�bitat es obligatorio';
+        SET @Mensaje = 'El código de hábitat es obligatorio';
         RETURN;
     END
 
-    DECLARE @estado BIT;
-    SET @estado = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+    DECLARE @EstadoHabitat BIT;
+    SET @EstadoHabitat = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
 
-    IF @estado IS NULL
+    IF @EstadoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El h�bitat no existe';
+        SET @Mensaje = 'El hábitat no existe';
         RETURN;
     END
 
-    IF @estado = 0
+    IF @EstadoHabitat = 0
     BEGIN
-        SET @Mensaje = 'El h�bitat ya est� eliminado';
+        SET @Mensaje = 'El hábitat ya está eliminado';
         RETURN;
     END
 
-    UPDATE Habitat SET
-        Estado = 0,
-        FechaEliminacion = GETDATE()
+    UPDATE Habitat SET Estado = 0, DateDelete = GETDATE()
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'H�bitat eliminado correctamente';
+    SET @Mensaje = 'Hábitat eliminado correctamente';
 END;
 GO
 
-------------------- Recuperar habitat --------------------------
+-- Recuperar habitat eliminado --
+
 CREATE PROC ProcRestoreHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
@@ -158,30 +149,28 @@ AS
 BEGIN
     IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El c�digo del h�bitat es obligatorio';
+        SET @Mensaje = 'El código de hábitat es obligatorio';
         RETURN;
     END
 
-    DECLARE @estado BIT;
-    SET @estado = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+    DECLARE @EstadoHabitat BIT;
+    SET @EstadoHabitat = (SELECT Estado FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
 
-    IF @estado IS NULL
+    IF @EstadoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El h�bitat no existe';
+        SET @Mensaje = 'El hábitat no existe';
         RETURN;
     END
 
-    IF @estado = 1
+    IF @EstadoHabitat = 1
     BEGIN
-        SET @Mensaje = 'El h�bitat ya est� activo';
+        SET @Mensaje = 'El hábitat ya está activo';
         RETURN;
     END
 
-    UPDATE Habitat SET
-        Estado = 1,
-        FechaEliminacion = NULL
+    UPDATE Habitat SET Estado = 1, DateDelete = NULL
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'H�bitat restaurado correctamente';
+    SET @Mensaje = 'Hábitat restaurado correctamente';
 END;
 GO
