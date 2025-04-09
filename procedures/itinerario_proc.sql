@@ -1,115 +1,184 @@
+----- proc itinerario -----
 
-
-
---------------------- ESTA TODO MALO REVISA LA TABLA Itinerario ---------------------
-
-
-
-
-
--- Insertar Itinerario --
-
+------------------------------------------ Insertar Itinerario--------------------------------
 CREATE PROC ProcInsertItinerario
-    @Nombre NVARCHAR(100),
-    @Duracion NVARCHAR(50),
-    @Descripcion NVARCHAR(MAX),
+    @Duracion TIME,
+    @Longitud DECIMAL(10,2),
+    @MaxVisitantes INT,
+    @NumEspecies INT,
+    @Fecha DATE,
+    @Hora TIME,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF @Nombre IS NULL OR @Duracion IS NULL OR @Descripcion IS NULL
+    -- Validaciones de NULL
+    IF @Duracion IS NULL OR @Longitud IS NULL OR @MaxVisitantes IS NULL OR 
+       @NumEspecies IS NULL OR @Fecha IS NULL OR @Hora IS NULL
     BEGIN
         SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    IF LEN(@Nombre) < 3
+    -- Validaciones adicionales
+
+    --si consideras que esta validacion es innecesaria entonces borrala
+    IF @Duracion <= CAST('00:00:00' AS TIME)
+        BEGIN
+            SET @Mensaje = 'La duración debe ser un valor positivo';
+        RETURN;
+    END
+    
+    IF @Longitud <= 0
     BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La longitud debe ser mayor a cero';
         RETURN;
     END
 
-    IF LEN(@Descripcion) < 10
+    IF @MaxVisitantes <= 0
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'El número máximo de visitantes debe ser mayor a cero';
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM Itinerario WHERE Nombre = @Nombre AND Estado = 1)
+    --valide que un maximo de especies sea 100 porque imagina si llegan a poner 10,000 especies
+    --lo mismo pensaba para visitantes, pero eso ya depende del negocio, cuantos puede soportar, agregarlo si consideras necesario
+    --puedes quitarlo si no te parece
+    IF @NumEspecies < 0 OR @NumEspecies > 100
     BEGIN
-        SET @Mensaje = 'Ya existe un itinerario activo con ese nombre';
+        SET @Mensaje = 'El número de especies no puede ser negativo y el maximo permitido es de 100';
         RETURN;
     END
 
-    INSERT INTO Itinerario (Nombre, Duracion, Descripcion)
-    VALUES (@Nombre, @Duracion, @Descripcion);
+    IF @Fecha = CAST(GETDATE() AS DATE) AND @Hora < CAST(GETDATE() AS TIME)
+    BEGIN
+        SET @Mensaje = 'La hora no puede ser en el pasado para itinerarios hoy';
+        RETURN;
+    END
+
+    -- Verificar que hora + duración no pase de 23:59:59
+    --esta validacion creo que se podria conbinar con la anterior para tener un solo bloque, pero no se vos que pensas.
+    IF DATEADD(MINUTE, DATEDIFF(MINUTE, 0, @Duracion), @Hora) >= CAST('23:59:59' AS TIME)
+    BEGIN
+        SET @Mensaje = 'La duración excede el límite del día';
+    RETURN;
+    END
+
+    -- Verificar que no exista ya un itinerario con la misma fecha y hora
+    -- No exactamente necesario. Si te parece, dejalo. Sino, quítalo
+    IF EXISTS (
+        SELECT 1 FROM Itinerario 
+        WHERE Fecha = @Fecha AND Hora = @Hora AND Estado = 1
+    )
+    BEGIN
+        SET @Mensaje = 'Ya existe un itinerario activo con la misma fecha y hora';
+        RETURN;
+    END
+
+    -- Inserción
+    INSERT INTO Itinerario (Duracion, Longitud, MaxVisitantes, NumEspecies, Fecha, Hora)
+    VALUES (@Duracion, @Longitud, @MaxVisitantes, @NumEspecies, @Fecha, @Hora);
 
     SET @Mensaje = 'Itinerario insertado correctamente';
 END;
 GO
 
--- Actualizar Itinerario --
+----------------------------------------------- Actualizar Itinerario -----------------------------------------
 
 CREATE PROC ProcUpdateItinerario
     @CodigoItinerario UNIQUEIDENTIFIER,
-    @NuevoNombre NVARCHAR(100),
-    @NuevaDuracion NVARCHAR(50),
-    @NuevaDescripcion NVARCHAR(MAX),
+    @Duracion TIME,
+    @Longitud DECIMAL(10,2),
+    @MaxVisitantes INT,
+    @NumEspecies INT,
+    @Fecha DATE,
+    @Hora TIME,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    IF @CodigoItinerario IS NULL OR @NuevoNombre IS NULL OR @NuevaDuracion IS NULL OR @NuevaDescripcion IS NULL
+    -- validacion para ver si el estado existe o  esta eliminado
+    IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario AND Estado = 1)
+    BEGIN
+        SET @Mensaje = 'El itinerario no existe o está eliminado';
+        RETURN;
+    END
+
+
+    -- Validaciones de NULL
+    IF @CodigoItinerario IS NULL OR @Duracion IS NULL OR @Longitud IS NULL OR 
+       @MaxVisitantes IS NULL OR @NumEspecies IS NULL OR @Fecha IS NULL OR @Hora IS NULL
     BEGIN
         SET @Mensaje = 'Todos los campos son obligatorios';
         RETURN;
     END
 
-    IF LEN(@NuevoNombre) < 3
+    -- Validaciones adicionales
+    
+    IF @Duracion <= CAST('00:00:00' AS TIME)
     BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        SET @Mensaje = 'La duración debe ser un valor positivo';
+        RETURN;
+    END
+    
+    --como consideracion estaba pensando que tambien se puede validar una longitud maxima, si te parece lo agregas
+    IF @Longitud <= 0
+    BEGIN
+        SET @Mensaje = 'La longitud debe ser mayor a cero';
         RETURN;
     END
 
-    IF LEN(@NuevaDescripcion) < 10
+    IF @MaxVisitantes <= 0
     BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
+        SET @Mensaje = 'El número máximo de visitantes debe ser mayor a cero';
         RETURN;
     END
 
-    DECLARE @EstadoItin BIT;
-    SET @EstadoItin = (SELECT Estado FROM Itinerario WHERE CodigoItinerario = @CodigoItinerario);
-
-    IF @EstadoItin IS NULL
+    
+    IF @NumEspecies < 0 OR @NumEspecies > 100
     BEGIN
-        SET @Mensaje = 'El itinerario no existe';
+        SET @Mensaje = 'El número de especies no puede ser negativo y el maximo permitido es de 100';
         RETURN;
     END
 
-    IF @EstadoItin = 0
+    IF @Fecha = CAST(GETDATE() AS DATE) AND @Hora < CAST(GETDATE() AS TIME)
     BEGIN
-        SET @Mensaje = 'El itinerario está eliminado';
+        SET @Mensaje = 'La hora no puede ser en el pasado para itinerarios hoy';
         RETURN;
     END
 
+    
+    -- Verificar que hora + duración no pase de 23:59:59
+    IF DATEADD(MINUTE, DATEDIFF(MINUTE, 0, @Duracion), @Hora) >= CAST('23:59:59' AS TIME)
+    BEGIN
+        SET @Mensaje = 'La duración excede el límite del día';
+    RETURN;
+    END
+
+    -- Verificar que no haya otro itinerario en la misma fecha y hora
+	-- No exactamente necesario. Si te parece, dejalo. Sino, quítalo
     IF EXISTS (
-        SELECT 1 FROM Itinerario
-        WHERE Nombre = @NuevoNombre AND CodigoItinerario != @CodigoItinerario AND Estado = 1
+        SELECT 1 FROM Itinerario 
+        WHERE Fecha = @Fecha AND Hora = @Hora 
+        AND CodigoIti <> @CodigoItinerario AND Estado = 1
     )
     BEGIN
-        SET @Mensaje = 'Ya existe otro itinerario activo con ese nombre';
+        SET @Mensaje = 'Ya existe otro itinerario activo con la misma fecha y hora';
         RETURN;
     END
 
-    UPDATE Itinerario SET
-        Nombre = @NuevoNombre,
-        Duracion = @NuevaDuracion,
-        Descripcion = @NuevaDescripcion
-    WHERE CodigoItinerario = @CodigoItinerario;
+    UPDATE Itinerario
+    SET Duracion = @Duracion,
+        Longitud = @Longitud,
+        MaxVisitantes = @MaxVisitantes,
+        NumEspecies = @NumEspecies,
+        Fecha = @Fecha,
+        Hora = @Hora
+    WHERE CodigoIti = @CodigoItinerario;
 
     SET @Mensaje = 'Itinerario actualizado correctamente';
 END;
 GO
 
---- eliminar itinerario --
+----------------------------------------------- Eliminar Itinerario -----------------------------------------------------
 
 CREATE PROC ProcDeleteItinerario
     @CodigoItinerario UNIQUEIDENTIFIER,
@@ -122,29 +191,29 @@ BEGIN
         RETURN;
     END
 
-    DECLARE @EstadoItin BIT;
-    SET @EstadoItin = (SELECT Estado FROM Itinerario WHERE CodigoItinerario = @CodigoItinerario);
-
-    IF @EstadoItin IS NULL
+    IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario)
     BEGIN
         SET @Mensaje = 'El itinerario no existe';
         RETURN;
     END
 
-    IF @EstadoItin = 0
+    DECLARE @Estado BIT = (SELECT Estado FROM Itinerario WHERE CodigoIti = @CodigoItinerario);
+
+    IF @Estado = 0
     BEGIN
         SET @Mensaje = 'El itinerario ya está eliminado';
         RETURN;
     END
 
-    UPDATE Itinerario SET Estado = 0, DateDelete = GETDATE()
-    WHERE CodigoItinerario = @CodigoItinerario;
+    UPDATE Itinerario
+    SET Estado = 0, DateDelete = GETDATE()
+    WHERE CodigoIti = @CodigoItinerario;
 
     SET @Mensaje = 'Itinerario eliminado correctamente';
 END;
 GO
 
--- recuperar itinerario --
+----------------------------------------- Restaurar Itinerario ---------------------------------------
 
 CREATE PROC ProcRestoreItinerario
     @CodigoItinerario UNIQUEIDENTIFIER,
@@ -157,23 +226,24 @@ BEGIN
         RETURN;
     END
 
-    DECLARE @EstadoItin BIT;
-    SET @EstadoItin = (SELECT Estado FROM Itinerario WHERE CodigoItinerario = @CodigoItinerario);
-
-    IF @EstadoItin IS NULL
+    IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario)
     BEGIN
         SET @Mensaje = 'El itinerario no existe';
         RETURN;
     END
 
-    IF @EstadoItin = 1
+    DECLARE @Estado BIT = (SELECT Estado FROM Itinerario WHERE CodigoIti = @CodigoItinerario);
+
+
+    IF @Estado = 1
     BEGIN
         SET @Mensaje = 'El itinerario ya está activo';
         RETURN;
     END
 
-    UPDATE Itinerario SET Estado = 1, DateDelete = NULL
-    WHERE CodigoItinerario = @CodigoItinerario;
+    UPDATE Itinerario
+    SET Estado = 1, DateDelete = NULL
+    WHERE CodigoIti = @CodigoItinerario;
 
     SET @Mensaje = 'Itinerario restaurado correctamente';
 END;
