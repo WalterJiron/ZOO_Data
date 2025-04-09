@@ -1,6 +1,69 @@
----- PROC ZONA ----
 
--- Insertar zona --
+
+
+
+
+
+
+
+
+
+---------------------- CLASE MIERDA LA VERDAD NI LEISTE EL LO QUE TE DIO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 CREATE PROCEDURE zona_proc
     @Accion VARCHAR(10),

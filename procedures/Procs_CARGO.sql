@@ -3,6 +3,8 @@ Use ZOO
 
 GO
 
+-------------------------- LA DECRIPCION NO PUEDE SER NULA --------------------------
+
 CREATE PROCEDURE Insertar_Cargo
     @NombreC NVARCHAR(50),
     @DescripcionC NVARCHAR(MAX),
@@ -41,10 +43,10 @@ END;
 GO
 
 --------------------UPDATE CARGO------------------------
-CREATE PROCEDURE UPDATE_CARGO
+CREATE PROCEDURE UPDATE_CARGO                           --- Esta como raro que en este si lo implementaste y en el otro no :|
     @CDC UNIQUEIDENTIFIER,
-    @NombreC NVARCHAR(50),
-    @DescripcionC NVARCHAR(MAX),
+    @NombreC NVARCHAR(50),   --- NO ESTA VALIDADO
+    @DescripcionC NVARCHAR(MAX),   --- NO ESTA VALIDADO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
@@ -92,6 +94,9 @@ END;
 GO
 
 ------------------------------------Eliminar CARGO-----------------------
+
+
+--- NO VALIDAS LA NULIDAD
 CREATE PROCEDURE ELIMINAR_CARGO 
     @CDC UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT
@@ -128,6 +133,9 @@ GO
 
 
 -----------Activar CARGO--------------------
+
+
+--- NO VALIDAS LA NULIDAD
 CREATE PROCEDURE ACTIVAR_CARGO 
     @CDC UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT

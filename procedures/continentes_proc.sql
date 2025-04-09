@@ -1,4 +1,4 @@
----- PROC CONTINENTE ----
+---- PROC CONTINENTE ----   10/10
 
 --	Insertar continente --
 
@@ -33,7 +33,7 @@ BEGIN
     BEGIN
         IF @CodigoCont IS NULL
         BEGIN
-            SET @Mensaje = 'Debe proporcionar el código del continente';
+            SET @Mensaje = 'Debe proporcionar el cï¿½digo del continente';
             RETURN;
         END
 
@@ -71,7 +71,7 @@ BEGIN
     BEGIN
         IF @CodigoCont IS NULL
         BEGIN
-            SET @Mensaje = 'Debe proporcionar el código del continente a eliminar';
+            SET @Mensaje = 'Debe proporcionar el cï¿½digo del continente a eliminar';
             RETURN;
         END
 
@@ -86,7 +86,7 @@ BEGIN
     BEGIN
         IF @CodigoCont IS NULL
         BEGIN
-            SET @Mensaje = 'Debe proporcionar el código del continente a restaurar';
+            SET @Mensaje = 'Debe proporcionar el cï¿½digo del continente a restaurar';
             RETURN;
         END
 
@@ -99,7 +99,7 @@ BEGIN
 
     ELSE
     BEGIN
-        SET @Mensaje = 'Acción no válida';
+        SET @Mensaje = 'Acciï¿½n no vï¿½lida';
     END
 END;
 
@@ -133,7 +133,7 @@ BEGIN
 
     IF @EstadoContinente = 0
     BEGIN
-        SET @Mensaje = 'El continente está eliminado';
+        SET @Mensaje = 'El continente estï¿½ eliminado';
         RETURN;
     END
 
@@ -162,7 +162,7 @@ AS
 BEGIN
     IF @CodigoContinente IS NULL
     BEGIN
-        SET @Mensaje = 'El código de continente es obligatorio';
+        SET @Mensaje = 'El cï¿½digo de continente es obligatorio';
         RETURN;
     END
 
@@ -177,7 +177,7 @@ BEGIN
 
     IF @EstadoContinente = 0
     BEGIN
-        SET @Mensaje = 'El continente ya está eliminado';
+        SET @Mensaje = 'El continente ya estï¿½ eliminado';
         RETURN;
     END
 
@@ -188,6 +188,6 @@ BEGIN
 END;
 GO
 
--- No hay una restauración para continente, 
--- por lógica puede tratarse como un registro crítico en la jerarquía geográfica. 
--- Una vez eliminado, solo podría insertarse nuevamente
+-- No hay una restauraciï¿½n para continente, 
+-- por lï¿½gica puede tratarse como un registro crï¿½tico en la jerarquï¿½a geogrï¿½fica. 
+-- Una vez eliminado, solo podrï¿½a insertarse nuevamente

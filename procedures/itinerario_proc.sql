@@ -1,4 +1,11 @@
---- PROC ITINENRARIO ---
+
+
+
+--------------------- ESTA TODO MALO REVISA LA TABLA Itinerario ---------------------
+
+
+
+
 
 -- Insertar Itinerario --
 

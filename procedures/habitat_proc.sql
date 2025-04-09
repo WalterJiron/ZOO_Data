@@ -1,11 +1,11 @@
----- PROC HABITAT -----
+---- PROC HABITAT -----   Este campo no existe @TipoVegetacion
 
 -- Insertar Habitat --
 
 CREATE PROC ProcInsertHabitat
     @Nombre NVARCHAR(100),
-    @Clima NVARCHAR(100),
-    @TipoVegetacion NVARCHAR(100),
+    @Clima NVARCHAR(100),   -- No tiene validaciones
+    @TipoVegetacion NVARCHAR(100),   -- No tiene validaciones
     @Zona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
@@ -16,15 +16,16 @@ BEGIN
         RETURN;
     END
 
-    IF LEN(@Nombre) < 3
-    BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
-        RETURN;
-    END
-
+    -- Va de primero
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @Zona AND Estado = 1)
     BEGIN
         SET @Mensaje = 'La zona no existe o está inactiva';
+        RETURN;
+    END
+
+    IF LEN(@Nombre) < 3
+    BEGIN
+        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
         RETURN;
     END
 
@@ -46,8 +47,8 @@ GO
 CREATE PROC ProcUpdateHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @NuevoNombre NVARCHAR(100),
-    @NuevoClima NVARCHAR(100),
-    @NuevaVegetacion NVARCHAR(100),
+    @NuevoClima NVARCHAR(100),   -- No tiene validacion
+    @NuevaVegetacion NVARCHAR(100),   -- No tiene validacion
     @Zona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
