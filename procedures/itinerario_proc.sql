@@ -21,7 +21,7 @@ BEGIN
 
     -- Validaciones adicionales
 
-    --si consideras que esta validacion es innecesaria entonces borrala
+    --si consideras que esta validacion es innecesaria entonces borrala -- ESTA BIEN 
     IF @Duracion <= CAST('00:00:00' AS TIME)
         BEGIN
             SET @Mensaje = 'La duración debe ser un valor positivo';
@@ -40,8 +40,9 @@ BEGIN
         RETURN;
     END
 
-    --valide que un maximo de especies sea 100 porque imagina si llegan a poner 10,000 especies
+    --valide que un maximo de especies sea 100 porque imagina si llegan a poner 10,000 especies 
     --lo mismo pensaba para visitantes, pero eso ya depende del negocio, cuantos puede soportar, agregarlo si consideras necesario
+    -- Hay que ver bien eso ya que podria ser mayor que 100 pero asi dejalo por el momento
     --puedes quitarlo si no te parece
     IF @NumEspecies < 0 OR @NumEspecies > 100
     BEGIN
@@ -55,15 +56,17 @@ BEGIN
         RETURN;
     END
 
-    -- Verificar que hora + duración no pase de 23:59:59
-    --esta validacion creo que se podria conbinar con la anterior para tener un solo bloque, pero no se vos que pensas.
+    -- Verificar que hora + duración no pase de 23:59:59  Esto tambie depnde ya que no sabemos si el zoo tiene para  hospedarse
+    --esta validacion creo que se podria conbinar con la anterior para tener un solo bloque, pero no se vos que pensas. 
+    --ASI ESTA BIEN PARA EVITAR LA REDUNDANCIA 10/10
     IF DATEADD(MINUTE, DATEDIFF(MINUTE, 0, @Duracion), @Hora) >= CAST('23:59:59' AS TIME)
     BEGIN
         SET @Mensaje = 'La duración excede el límite del día';
     RETURN;
     END
 
-    -- Verificar que no exista ya un itinerario con la misma fecha y hora
+    -- Verificar que no exista ya un itinerario con la misma fecha y hora TE FALTA EL LUGAR
+    -- YA QUE DOS ITINERARIOS PUEDEN TENES LA MISMA FECHA Y HORA PERO DIFERENE ZONA
     -- No exactamente necesario. Si te parece, dejalo. Sino, quítalo
     IF EXISTS (
         SELECT 1 FROM Itinerario 
@@ -95,15 +98,7 @@ CREATE PROC ProcUpdateItinerario
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- validacion para ver si el estado existe o  esta eliminado
-    IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'El itinerario no existe o está eliminado';
-        RETURN;
-    END
-
-
-    -- Validaciones de NULL
+     -- Validaciones de NULL ESTO SIEMPRE VA PRIMERO
     IF @CodigoItinerario IS NULL OR @Duracion IS NULL OR @Longitud IS NULL OR 
        @MaxVisitantes IS NULL OR @NumEspecies IS NULL OR @Fecha IS NULL OR @Hora IS NULL
     BEGIN
@@ -111,8 +106,16 @@ BEGIN
         RETURN;
     END
 
+
+    -- validacion para ver si el estado existe o  esta eliminado
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
+    IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario AND Estado = 1)
+    BEGIN
+        SET @Mensaje = 'El itinerario no existe o está eliminado';
+        RETURN;
+    END
+
     -- Validaciones adicionales
-    
     IF @Duracion <= CAST('00:00:00' AS TIME)
     BEGIN
         SET @Mensaje = 'La duración debe ser un valor positivo';
@@ -155,6 +158,7 @@ BEGIN
 
     -- Verificar que no haya otro itinerario en la misma fecha y hora
 	-- No exactamente necesario. Si te parece, dejalo. Sino, quítalo
+    -- HAY QUE HACER LO MISMO QUE TE DIJE EN EL ANTERIOR
     IF EXISTS (
         SELECT 1 FROM Itinerario 
         WHERE Fecha = @Fecha AND Hora = @Hora 
@@ -191,6 +195,7 @@ BEGIN
         RETURN;
     END
 
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
     IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario)
     BEGIN
         SET @Mensaje = 'El itinerario no existe';
@@ -226,6 +231,7 @@ BEGIN
         RETURN;
     END
 
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
     IF NOT EXISTS (SELECT 1 FROM Itinerario WHERE CodigoIti = @CodigoItinerario)
     BEGIN
         SET @Mensaje = 'El itinerario no existe';

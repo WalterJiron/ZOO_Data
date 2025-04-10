@@ -1,4 +1,4 @@
----- proc zona ----
+---- proc zona ---- 10/10
 
 CREATE PROC ProcInsertZona
     @NameZona NVARCHAR(100),
@@ -51,18 +51,7 @@ BEGIN
         RETURN;
     END
 
-    IF LEN(@NuevoNombre) < 3
-    BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
-        RETURN;
-    END
-
-    IF @NuevaExtension <= 0
-    BEGIN
-        SET @Mensaje = 'La extensión debe ser mayor a cero';
-        RETURN;
-    END
-
+    --- 10/10 ASI LO TENES QUE HACER 
     DECLARE @EstadoZona BIT;
     SET @EstadoZona = (SELECT EstadoZona FROM Zona WHERE CodigoZona = @CodigoZona);
 
@@ -75,6 +64,18 @@ BEGIN
     IF @EstadoZona = 0
     BEGIN
         SET @Mensaje = 'La zona está eliminada';
+        RETURN;
+    END
+
+    IF LEN(@NuevoNombre) < 3
+    BEGIN
+        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        RETURN;
+    END
+
+    IF @NuevaExtension <= 0
+    BEGIN
+        SET @Mensaje = 'La extensión debe ser mayor a cero';
         RETURN;
     END
 

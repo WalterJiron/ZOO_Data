@@ -11,6 +11,8 @@ CREATE PROC ProcInsertHabitat
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
+
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
     -- Validaciones de entrada
     --La cantidad de caracteres puede se cambiada. (Si no te parece cambialo vos)
     IF @Nombre IS NULL OR LEN(@Nombre) < 5 OR @Clima IS NULL OR LEN(@Clima) < 5 OR @DescripHabitat IS NULL OR @CodigoZona IS NULL
@@ -59,6 +61,7 @@ CREATE PROC ProcUpdateHabitat
 AS
 BEGIN
 
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
     -- Validación de existencia del hábitat
     IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat AND EstadoHabitat = 1)
     BEGIN
@@ -66,6 +69,7 @@ BEGIN
         RETURN;
     END
 
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
     -- Validaciones de entrada
     IF @CodigoHabitat IS NULL OR @NuevoNombre IS NULL OR LEN(@NuevoNombre) < 5 OR @NuevoClima IS NULL OR LEN(@NuevoClima) < 5 OR @NuevaDescripcion IS NULL OR @NuevoCodigoZona IS NULL
     BEGIN
@@ -88,6 +92,7 @@ BEGIN
     END 
     
     
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
     -- Validación de existencia de la nueva zona
     IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @NuevoCodigoZona AND EstadoZona = 1)
     BEGIN
@@ -122,6 +127,7 @@ BEGIN
         RETURN;
     END
 
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
     IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat)
     BEGIN
         SET @Mensaje = 'El hábitat no existe';
@@ -160,7 +166,7 @@ BEGIN
         RETURN;
     END
 
-
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
     IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat)
     BEGIN
         SET @Mensaje = 'El hábitat no existe';
