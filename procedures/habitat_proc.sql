@@ -1,160 +1,192 @@
---------------------habitad----------
+--- proc habitat --
 
---------------------------Insertar Habitat ------------------------
+
+
+------------------------------- Insertar Habitat --------------------------------
 CREATE PROC ProcInsertHabitat
-    @Nombre NVARCHAR(100),
-    @Descripcion NVARCHAR(MAX),
-    @Zona UNIQUEIDENTIFIER,
+    @Nombre VARCHAR(100),
+    @Clima VARCHAR(100),
+    @DescripHabitat VARCHAR(MAX),
+    @CodigoZona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validación: campos obligatorios
-    IF @Nombre IS NULL OR @Descripcion IS NULL OR @Zona IS NULL
+
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
+    -- Validaciones de entrada
+    --La cantidad de caracteres puede se cambiada. (Si no te parece cambialo vos)
+    IF @Nombre IS NULL OR LEN(@Nombre) < 5 OR @Clima IS NULL OR LEN(@Clima) < 5 OR @DescripHabitat IS NULL OR @CodigoZona IS NULL
     BEGIN
-        SET @Mensaje = 'Todos los campos son obligatorios';
+        SET @Mensaje = 'Todos los campos son obligatorios y el nombre y clima deben tener al menos 5 caracteres';
         RETURN;
     END
 
-    -- Validación: longitud mínima del nombre
-    IF LEN(@Nombre) < 3
+    --estas validaciones si no te parecen puedes eliminarlas o cambiar el numero
+    IF LEN(@Nombre) > 100
     BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        SET @Mensaje = 'El nombre no puede exceder los 100 caracteres'
+        RETURN;
+    END 
+
+    IF LEN(@Clima) > 100
+    BEGIN
+        SET @Mensaje = 'El clima no puede exceder los 100 caracteres'
+        RETURN;
+    END 
+    
+    -- ValidaciÃ³n de existencia de la zona
+    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @CodigoZona AND EstadoZona = 1)
+    BEGIN
+        SET @Mensaje = 'La zona especificada no existe o estÃ¡ inactiva';
         RETURN;
     END
 
-    -- Validación: longitud mínima de la descripción
-    IF LEN(@Descripcion) < 10
-    BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
-        RETURN;
-    END
+    -- InserciÃ³n en la tabla Habitat
+    INSERT INTO Habitat (Nombre, Clima, DescripHabitat, CodigoZona)
+    VALUES (@Nombre, @Clima, @DescripHabitat, @CodigoZona);
 
-    -- Validación: existencia de la zona activa
-    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @Zona AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'La zona especificada no existe o está eliminada';
-        RETURN;
-    END
-
-    -- Validación: nombre duplicado de hábitat activo
-    IF EXISTS (SELECT 1 FROM Habitat WHERE Nombre = @Nombre AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'Ya existe un hábitat activo con ese nombre';
-        RETURN;
-    END
-
-    -- Inserción de hábitat
-    INSERT INTO Habitat (Nombre, Descripcion, Zona)
-    VALUES (@Nombre, @Descripcion, @Zona);
-
-    SET @Mensaje = 'Hábitat insertado correctamente';
+    SET @Mensaje = 'HÃ¡bitat insertado correctamente';
 END;
 GO
-------------------- actualizar habitat ----------------------
+
+--------------------------------- Actualizar Habitat -------------------------------------
+
 CREATE PROC ProcUpdateHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
-    @NuevoNombre NVARCHAR(100),
-    @NuevaDescripcion NVARCHAR(MAX),
-    @NuevaZona UNIQUEIDENTIFIER,
+    @NuevoNombre VARCHAR(100),
+    @NuevoClima VARCHAR(100),
+    @NuevaDescripcion VARCHAR(MAX),
+    @NuevoCodigoZona UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validación: existencia del hábitat activo
-    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat AND Estado = 1)
+
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
+    -- ValidaciÃ³n de existencia del hÃ¡bitat
+    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat AND EstadoHabitat = 1)
     BEGIN
-        SET @Mensaje = 'El hábitat no existe o está eliminado';
+        SET @Mensaje = 'El hÃ¡bitat no existe o estÃ¡ eliminado';
         RETURN;
     END
 
-    -- Validación: campos obligatorios
-    IF @NuevoNombre IS NULL OR @NuevaDescripcion IS NULL OR @NuevaZona IS NULL
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
+    -- Validaciones de entrada
+    IF @CodigoHabitat IS NULL OR @NuevoNombre IS NULL OR LEN(@NuevoNombre) < 5 OR @NuevoClima IS NULL OR LEN(@NuevoClima) < 5 OR @NuevaDescripcion IS NULL OR @NuevoCodigoZona IS NULL
     BEGIN
-        SET @Mensaje = 'Todos los campos son obligatorios';
+        SET @Mensaje = 'Todos los campos son obligatorios y el nombre y clima deben tener al menos 5 caracteres';
         RETURN;
     END
 
-    -- Validación: longitud mínima del nombre
-    IF LEN(@NuevoNombre) < 3
+
+    --estas validaciones si no te parecen puedes eliminarlas o cambiar el numero
+    IF LEN(@NuevoNombre) > 100
     BEGIN
-        SET @Mensaje = 'El nombre debe tener al menos 3 caracteres';
+        SET @Mensaje = 'El nombre no puede exceder los 100 caracteres'
+        RETURN;
+    END 
+
+    IF LEN(@NuevoClima) > 100
+    BEGIN
+        SET @Mensaje = 'El clima no puede exceder los 100 caracteres'
+        RETURN;
+    END 
+    
+    
+    ----------- ESTAS SIENDO REDONDANTE EN LOS DATOS
+    -- ValidaciÃ³n de existencia de la nueva zona
+    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @NuevoCodigoZona AND EstadoZona = 1)
+    BEGIN
+        SET @Mensaje = 'La nueva zona especificada no existe o estÃ¡ inactiva';
         RETURN;
     END
 
-    -- Validación: longitud mínima de la descripción
-    IF LEN(@NuevaDescripcion) < 10
-    BEGIN
-        SET @Mensaje = 'La descripción debe tener al menos 10 caracteres';
-        RETURN;
-    END
-
-    -- Validación: existencia de la nueva zona
-    IF NOT EXISTS (SELECT 1 FROM Zona WHERE CodigoZona = @NuevaZona AND Estado = 1)
-    BEGIN
-        SET @Mensaje = 'La zona especificada no existe o está eliminada';
-        RETURN;
-    END
-
-    -- Validación: duplicado de nombre en otro hábitat activo
-    IF EXISTS (
-        SELECT 1 FROM Habitat 
-        WHERE Nombre = @NuevoNombre AND CodigoHabitat != @CodigoHabitat AND Estado = 1
-    )
-    BEGIN
-        SET @Mensaje = 'Ya existe otro hábitat activo con ese nombre';
-        RETURN;
-    END
-
-    -- Actualización del hábitat
+    -- ActualizaciÃ³n del hÃ¡bitat
     UPDATE Habitat
     SET Nombre = @NuevoNombre,
-        Descripcion = @NuevaDescripcion,
-        Zona = @NuevaZona
+        Clima = @NuevoClima,
+        DescripHabitat = @NuevaDescripcion,
+        CodigoZona = @NuevoCodigoZona
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat actualizado correctamente';
+    SET @Mensaje = 'HÃ¡bitat actualizado correctamente';
 END;
 GO
 
-------------------- eliminar habitat --------------------------
+
+---------------------------------------------------- Eliminar Habitat ------------------------------------------
+
 CREATE PROC ProcDeleteHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validación: existencia del hábitat activo
-    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat AND Estado = 1)
+    -- ValidaciÃ³n de cÃ³digo de hÃ¡bitat
+    IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El hábitat no existe o ya está eliminado';
+        SET @Mensaje = 'El cÃ³digo del hÃ¡bitat es obligatorio';
         RETURN;
     END
 
-    -- Eliminación lógica del hábitat (Estado = 0, se marca fecha)
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
+    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat)
+    BEGIN
+        SET @Mensaje = 'El hÃ¡bitat no existe';
+        RETURN;
+    END
+
+    DECLARE @Estado BIT = (SELECT EstadoHabitat FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+
+    -- ValidaciÃ³n de si el hÃ¡bitat ya estÃ¡ eliminado
+    IF @Estado = 0
+    BEGIN
+        SET @Mensaje = 'El hÃ¡bitat ya estÃ¡ eliminado';
+        RETURN;
+    END
+
+    -- EliminaciÃ³n lÃ³gica del hÃ¡bitat
     UPDATE Habitat
-    SET Estado = 0, DateDelete = GETDATE()
+    SET EstadoHabitat = 0, DateDelete = GETDATE()
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat eliminado correctamente';
+    SET @Mensaje = 'HÃ¡bitat eliminado correctamente';
 END;
 GO
 
-------------------- Recuperar habitat --------------------------
+------------------------------------------- Recuperar habitat eliminado --------------------------------------------
+
 CREATE PROC ProcRestoreHabitat
     @CodigoHabitat UNIQUEIDENTIFIER,
     @Mensaje VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validación: existencia del hábitat eliminado
-    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat AND Estado = 0)
+    -- ValidaciÃ³n de cÃ³digo de hÃ¡bitat
+    IF @CodigoHabitat IS NULL
     BEGIN
-        SET @Mensaje = 'El hábitat no existe o ya está activo';
+        SET @Mensaje = 'El cÃ³digo del hÃ¡bitat es obligatorio';
         RETURN;
     END
 
-    -- Restauración lógica del hábitat (Estado = 1, se borra la fecha de eliminación)
+    ------------------------------- MALA PRACTICA HAY QUE OPTIMISAR LOS RECURSOS -------------------------------
+    IF NOT EXISTS (SELECT 1 FROM Habitat WHERE CodigoHabitat = @CodigoHabitat)
+    BEGIN
+        SET @Mensaje = 'El hÃ¡bitat no existe';
+        RETURN;
+    END
+
+    DECLARE @Estado BIT = (SELECT EstadoHabitat FROM Habitat WHERE CodigoHabitat = @CodigoHabitat);
+
+    -- ValidaciÃ³n de si el hÃ¡bitat ya estÃ¡ activo
+    IF @Estado = 1
+    BEGIN
+        SET @Mensaje = 'El hÃ¡bitat ya estÃ¡ activo';
+        RETURN;
+    END
+
+    -- RestauraciÃ³n del hÃ¡bitat
     UPDATE Habitat
-    SET Estado = 1, DateDelete = NULL
+    SET EstadoHabitat = 1, DateDelete = NULL
     WHERE CodigoHabitat = @CodigoHabitat;
 
-    SET @Mensaje = 'Hábitat restaurado correctamente';
+    SET @Mensaje = 'HÃ¡bitat restaurado correctamente';
 END;
 GO
