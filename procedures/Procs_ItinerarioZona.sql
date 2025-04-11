@@ -17,16 +17,89 @@ BEGIN
 		RETURN;
 	END
 
+	DECLARE @EXISTENCIA_ITINERARIO AS BIT 
+	SET @EXISTENCIA_ITINERARIO=(SELECT Estado FROM Itinerario WHERE CodigoIti=@IdItinerario);
+
 	----VERIFICAR SI EXISTE EL ITINERARIO
-	IF NOT EXISTS(SELECT 1 FROM Itinerario WHERE CodigoIti=@IdItinerario)
+	IF (@EXISTENCIA_ITINERARIO IS NULL)
 	BEGIN
 		SET @MENSAJE='El itinerario no existe';
 		RETURN;
 	END
+
+	IF(@EXISTENCIA_ITINERARIO=0)
+	BEGIN
+		SET @MENSAJE='La habitad no existe';
+		RETURN
+	END
+
+	DECLARE @EXISTENCIA_ZONA AS BIT 
+	SET @EXISTENCIA_ZONA=(SELECT EstadoZona FROM Zona WHERE CodigoZona=@IDzona)
+
 	----VERIFICAR SI EXISTE LA ZONA
-	IF NOT EXISTS(SELECT 1 FROM Zona WHERE CodigoZona=@IDzona)
+	IF (@EXISTENCIA_ZONA IS NULL)
 	BEGIN
 		SET @MENSAJE='La zona no existe';
+		RETURN;
+	END
+
+	IF(@EXISTENCIA_ITINERARIO=0)
+	BEGIN
+		SET @MENSAJE='El itinerario se encuentra inactivo';
+		RETURN;
+	END
+
+	INSERT INTO ItinerarioZona(Itinerario,Zona)
+	VALUES(@IdItinerario,@IDzona)
+
+	SET @MENSAJE='Inserccion realizada';
+END
+
+GO
+
+---------------------Update itinerario zona---------------------------------
+CREATE PROC ACTUALIZAR_ITINERARIO_ZONA
+@IdItinerario UNIQUEIDENTIFIER,
+@IDzona UNIQUEIDENTIFIER,
+@MENSAJE VARCHAR(100) OUTPUT
+AS
+BEGIN
+	---verificar que los parametros no sean nulos
+	IF(@IdItinerario IS NULL OR @IDzona IS NULL)
+	BEGIN
+		SET @MENSAJE='No pueden haber parametros nulos';
+		RETURN;
+	END
+
+	DECLARE @EXISTENCIA_ITINERARIO AS BIT 
+	SET @EXISTENCIA_ITINERARIO=(SELECT Estado FROM Itinerario WHERE CodigoIti=@IdItinerario);
+
+	----VERIFICAR SI EXISTE EL ITINERARIO
+	IF (@EXISTENCIA_ITINERARIO IS NULL)
+	BEGIN
+		SET @MENSAJE='El itinerario no existe';
+		RETURN;
+	END
+
+	IF(@EXISTENCIA_ITINERARIO=0)
+	BEGIN
+		SET @MENSAJE='La habitad no existe';
+		RETURN
+	END
+
+	DECLARE @EXISTENCIA_ZONA AS BIT 
+	SET @EXISTENCIA_ZONA=(SELECT EstadoZona FROM Zona WHERE CodigoZona=@IDzona)
+
+	----VERIFICAR SI EXISTE LA ZONA
+	IF (@EXISTENCIA_ZONA IS NULL)
+	BEGIN
+		SET @MENSAJE='La zona no existe';
+		RETURN;
+	END
+
+	IF(@EXISTENCIA_ITINERARIO=0)
+	BEGIN
+		SET @MENSAJE='El itinerario se encuentra inactivo';
 		RETURN;
 	END
 	----Ver si existe la relacion entre ambas tablas
@@ -36,29 +109,42 @@ BEGIN
 		RETURN
 	END
 
-	INSERT INTO ItinerarioZona(Itinerario,Zona,EstadoItZo)
-	VALUES(@IdItinerario,@IDzona,1)
+	UPDATE ItinerarioZona SET 
+		Itinerario=@IdItinerario,
+		Zona=@IDzona
+	WHERE Itinerario = @IdItinerario AND Zona = @IDzona;
 
-	SET @MENSAJE='Inserccion realizada';
+	SET @MENSAJE='Update realizada';
 END
 
-GO
 
+GO
 ----------------------------ELIMINAR ITINERARIOZONA-----------------------------
-CREATE PROC ELIMNAR_ITINERARIOZONA
+CREATE PROC ELIMINAR_ITINERARIOZONA
 @IdItinerario UNIQUEIDENTIFIER,
 @IDzona UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100)OUTPUT
 AS
 BEGIN
-	------------VERIFICAR SI EXISTE LA RELACION ENTRE AMBAS TABLAS
-	IF NOT EXISTS(SELECT 1 FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona)
+
+	-----VER QUE NO SEAN NULOS
+	IF(@IdItinerario IS NULL OR @IDzona IS NULL)
 	BEGIN
-		SET @MENSAJE='La relacion entre itinerario y zona no existe';
+		SET @MENSAJE='No pueden ser nulos';
 		RETURN;
 	END
-	-----VER SI ESTA INACTIVO
-	IF EXISTS(SELECT 1 FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona AND EstadoItZo=0)
+		---BUSQUEDA
+	DECLARE @EXISTENCIA AS BIT
+	SET @EXISTENCIA=(SELECT EstadoItZo FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona);
+
+	IF(@EXISTENCIA IS NULL)
+	BEGIN
+		SET @MENSAJE='esta union no existe';
+		RETURN;
+	END
+
+		-----VER SI ESTA INACTIVO
+	IF (@EXISTENCIA=0)
 	BEGIN
 		SET @MENSAJE='Ya se encuentra inactivo';
 		RETURN;
@@ -80,14 +166,25 @@ CREATE PROC ACTIVAR_ITINERARIOZONA
 @MENSAJE VARCHAR(100)OUTPUT
 AS
 BEGIN
-	------------VERIFICAR SI EXISTE LA RELACION ENTRE AMBAS TABLAS
-	IF NOT EXISTS(SELECT 1 FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona)
+
+	-----VER QUE NO SEAN NULOS
+	IF(@IdItinerario IS NULL OR @IDzona IS NULL)
 	BEGIN
-		SET @MENSAJE='La relacion entre itinerario y zona no existe';
+		SET @MENSAJE='No pueden ser nulos';
 		RETURN;
 	END
-	-----VER SI ESTA ACTIVO
-	IF EXISTS(SELECT 1 FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona AND EstadoItZo=1)
+		---BUSQUEDA
+	DECLARE @EXISTENCIA AS BIT
+	SET @EXISTENCIA=(SELECT EstadoItZo FROM ItinerarioZona WHERE Itinerario=@IdItinerario AND Zona=@IDzona);
+
+	IF(@EXISTENCIA IS NULL)
+	BEGIN
+		SET @MENSAJE='esta union no existe';
+		RETURN;
+	END
+
+		-----VER SI ESTA ACTIVO
+	IF (@EXISTENCIA=1)
 	BEGIN
 		SET @MENSAJE='Ya se encuentra activo';
 		RETURN;

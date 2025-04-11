@@ -15,26 +15,41 @@ BEGIN
 		SET @MENSAJE='No puede ser parametros nulos';
 		RETURN;
 	END
+
+	DECLARE @EXISTSHABITAD AS BIT
+	SET @EXISTSHABITAD=(SELECT EstadoHabitat FROM Habitat WHERE CodigoHabitat=@HABITAD);
+
 	----validar que la especie existe
-	IF NOT EXISTS(SELECT 1 FROM Habitat WHERE CodigoHabitat=@HABITAD)
+	IF(@EXISTSHABITAD IS NULL )
 	BEGIN
-		SET @MENSAJE='El habitad no existe';
-		RETURN;
-	END
-	----validar que el habitad existe
-	IF NOT EXISTS(SELECT 1 FROM Especie WHERE CodigoEspecie=@ESPECIE)
-	BEGIN
-		SET @MENSAJE='La habitad no existe';
-	END
-	---ver si la relacion existe
-	IF EXISTS(SELECT 1 FROM EspecieHabitat WHERE Especie=@ESPECIE AND Habitat=@HABITAD)
-	BEGIN
-		SET @MENSAJE='La relacion entre especie y habitad ya existe';
+		SET @MENSAJE='la habitad no existe ';
 		RETURN;
 	END
 
-	INSERT INTO EspecieHabitat(Especie,Habitat,EstadoEH)
-	VALUES(@HABITAD,@ESPECIE,1);
+	IF(@EXISTSHABITAD = 0)
+	BEGIN
+		SET @MENSAJE='La habitad se encuentra inactiva';
+		RETURN;
+	END	
+	
+	DECLARE @EXISTESPECIE AS BIT 
+	SET @EXISTESPECIE=(SELECT 1 FROM Especie WHERE CodigoEspecie=@ESPECIE);
+
+
+	----validar que el habitad existe
+	IF (@EXISTESPECIE IS NULL)
+	BEGIN
+		SET @MENSAJE='La especie no existe';
+	END
+
+	IF(@EXISTESPECIE = 0)
+	BEGIN
+		SET @MENSAJE='LA ESPECIE SE ENCUENTRA INACTIVA';
+		RETURN
+	END
+
+	INSERT INTO EspecieHabitat(Especie,Habitat)
+	VALUES(@HABITAD,@ESPECIE);
 
 	SET @MENSAJE='Inserccion realizada';
 END
@@ -45,7 +60,6 @@ GO
 CREATE PROC UPDATE_ESPECIEHABITAD
 @ESPECIE UNIQUEIDENTIFIER,
 @HABITAD UNIQUEIDENTIFIER,
-@ESTADOEH BIT,
 @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
@@ -55,27 +69,49 @@ BEGIN
 		SET @MENSAJE='Los parametros no pueden ser nulos';
 		RETURN;
 	END
-	--VALIDAMOS SI EXISTE EL HABITAD 
-	IF NOT EXISTS(SELECT 1 FROM Habitat WHERE CodigoHabitat=@HABITAD)
+
+	DECLARE @EXISTSHABITAD AS BIT
+	SET @EXISTSHABITAD=(SELECT EstadoHabitat FROM Habitat WHERE CodigoHabitat=@HABITAD);
+
+	----validar que la especie existe
+	IF(@EXISTSHABITAD IS NULL )
 	BEGIN
-		SET @MENSAJE='El habitad no existe';
+		SET @MENSAJE='la habitad no existe ';
 		RETURN;
 	END
-	--VALIDAMOS SI EXISTE LA ESPECIE
-	IF NOT EXISTS(SELECT 1 FROM Especie WHERE CodigoEspecie=@ESPECIE)
+
+	IF(@EXISTSHABITAD = 0)
 	BEGIN
-		SET @MENSAJE='El especie no existe';
+		SET @MENSAJE='La habitad se encuentra inactiva';
 		RETURN;
+	END	
+	
+	DECLARE @EXISTESPECIE AS BIT 
+	SET @EXISTESPECIE=(SELECT 1 FROM Especie WHERE CodigoEspecie=@ESPECIE);
+
+
+	----validar que el habitad existe
+	IF (@EXISTESPECIE IS NULL)
+	BEGIN
+		SET @MENSAJE='La especie no existe';
 	END
+
+	IF(@EXISTESPECIE = 0)
+	BEGIN
+		SET @MENSAJE='LA ESPECIE SE ENCUENTRA INACTIVA';
+		RETURN
+	END
+
 	---VER SI LA RELACION EXISTE
 	IF EXISTS(SELECT 1 FROM EspecieHabitat WHERE Especie=@ESPECIE AND Habitat=@HABITAD)
 	BEGIN
-		SET @MENSAJE='La relacion si existe';
+		SET @MENSAJE='La relacion ya existe en la base de datos';
 		RETURN;
 	END
 
 	UPDATE EspecieHabitat SET
-		EstadoEH=@ESTADOEH 
+		Especie=@ESPECIE,
+		Habitat=@HABITAD
 	WHERE Especie=@ESPECIE AND Habitat=@HABITAD;
 
 	SET @MENSAJE='Se actualizo correctamente la relacion';
@@ -92,32 +128,27 @@ CREATE PROC Desactivar_EspecieHabitat
 AS
 BEGIN
     -- Validar que los parametros no sean nulos
-   IF(@Especie='' OR @Habitat='')
+   IF(@Especie IS NULL OR @Habitat IS NULL)
 	BEGIN
 		SET @MENSAJE='Los parametros no pueden ser nulos';
 		RETURN;
 	END
 
+	DECLARE @EXISTENCIA AS BIT 
+	SET @EXISTENCIA=(SELECT EstadoEH FROM EspecieHabitat WHERE Especie=@Especie AND Habitat=@Habitat);
+
     -- Validar si la especie existe
-    IF NOT EXISTS(SELECT 1 FROM Especie WHERE CodigoEspecie = @Especie)
+    IF (@EXISTENCIA IS NULL)
     BEGIN
-        SET @MENSAJE = 'La especie no existe';
+        SET @MENSAJE = 'La union del habitad y la especie no existe';
         RETURN;
     END
-
-    -- Validar si el habitat existe
-    IF NOT EXISTS(SELECT 1 FROM Habitat WHERE CodigoHabitat = @Habitat)
-    BEGIN
-        SET @MENSAJE = 'El habitat no existe';
-        RETURN;
-    END
-
-    -- Validar si la relacion existe y esta activa
-    IF NOT EXISTS(SELECT 1 FROM EspecieHabitat WHERE Especie = @Especie AND Habitat = @Habitat AND EstadoEH = 1)
-    BEGIN
-        SET @MENSAJE = 'La relacion entre la especie y el habitat no existe o ya esta desactivada';
-        RETURN;
-    END
+	 
+	IF(@EXISTENCIA = 0)
+	BEGIN
+		SET @MENSAJE='La union ya se encuentra inactiva';
+		RETURN;
+	END
 
     -- Actualizar la relacion a inactiva y establecer la fecha de eliminacion
     UPDATE EspecieHabitat SET 
@@ -137,38 +168,34 @@ CREATE PROC Activar_EspecieHabitat
 AS
 BEGIN
     -- Validar que los parametros no sean nulos
-   IF(@Especie='' OR @Habitat='')
+   IF(@Especie IS NULL OR @Habitat IS NULL)
 	BEGIN
 		SET @MENSAJE='Los parametros no pueden ser nulos';
 		RETURN;
 	END
 
+	DECLARE @EXISTENCIA AS BIT 
+	SET @EXISTENCIA=(SELECT EstadoEH FROM EspecieHabitat WHERE Especie=@Especie AND Habitat=@Habitat);
+
     -- Validar si la especie existe
-    IF NOT EXISTS(SELECT 1 FROM Especie WHERE CodigoEspecie = @Especie)
+    IF (@EXISTENCIA IS NULL)
     BEGIN
-        SET @MENSAJE = 'La especie no existe';
+        SET @MENSAJE = 'La union del habitad y la especie no existe';
         RETURN;
     END
+	 
+	IF(@EXISTENCIA = 1)
+	BEGIN
+		SET @MENSAJE='La union ya se encuentra activa';
+		RETURN;
+	END
 
-    -- Validar si el habitat existe
-    IF NOT EXISTS(SELECT 1 FROM Habitat WHERE CodigoHabitat = @Habitat)
-    BEGIN
-        SET @MENSAJE = 'El habitat no existe';
-        RETURN;
-    END
-
-    -- Validar si la relacion existe y esta inactiva
-    IF NOT EXISTS(SELECT 1 FROM EspecieHabitat WHERE Especie = @Especie AND Habitat = @Habitat AND EstadoEH = 0)
-    BEGIN
-        SET @MENSAJE = 'La relacion entre la especie y el habitat ya existe o ya esta activada';
-        RETURN;
-    END
-
-    -- Actualizar la relacion a inactiva y establecer la fecha de eliminacion
+    -- Actualizar la relacion a activa y establecer
     UPDATE EspecieHabitat SET 
-        EstadoEH = 0
+        EstadoEH = 1,
+		DateDelete = NULL
     WHERE Especie = @Especie AND Habitat = @Habitat;
 
-    SET @MENSAJE = 'La relacion entre la especie y el habitat ha sido desactivada con exito';
+    SET @MENSAJE = 'La relacion entre la especie y el habitat ha sido activada con exito';
 END
 GO

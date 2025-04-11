@@ -35,7 +35,7 @@ BEGIN
     INSERT INTO Cargo (NombreCargo, DescripCargo)
     VALUES (@NombreC, @DescripcionC);
 
-    -- Mensaje de �xito
+    -- Mensaje de exito
     SET @MENSAJE = 'Insercion realizada con exito';
 END;
 GO
