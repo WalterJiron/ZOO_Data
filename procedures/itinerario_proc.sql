@@ -1,4 +1,5 @@
 ----- proc itinerario -----
+-- Nada te parece. Vlt, hacelo vos
 
 ------------------------------------------ Insertar Itinerario--------------------------------
 CREATE PROC ProcInsertItinerario
