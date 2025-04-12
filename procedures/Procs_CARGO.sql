@@ -3,7 +3,6 @@ Use ZOO
 
 GO
 
--------------------------- LA DECRIPCION NO PUEDE SER NULA --------------------------
 
 CREATE PROCEDURE Insertar_Cargo
     @NombreC NVARCHAR(50),
@@ -11,12 +10,12 @@ CREATE PROCEDURE Insertar_Cargo
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-	---VALIDAR QUE NO SEA NULO
-	IF @NombreC IS NULL
-	BEGIN
-		SET @MENSAJE='No puede ser nulo';
-		RETURN;
-	END
+	---VALIDAR QUE NO SEA NULO y validamos espacios en blanco
+    IF @NombreC IS NULL OR LTRIM(RTRIM(@NombreC)) = '' OR @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
+    BEGIN
+        SET @MENSAJE = 'El nombre o la descripcion no pueden estar vacios';
+        RETURN;
+    END
 
     -- Validar si el nombre del cargo ya existe
     IF EXISTS (SELECT 1 FROM Cargo WHERE NombreCargo = @NombreC)
@@ -25,15 +24,7 @@ BEGIN
         RETURN;
     END
 
-    -- Validar si la descripcion es NULL o vacia
-	--LTRIM elimina espacios en blanco a la izquiera y RTRIM elimina espacios en blanco a la derecha
-    IF @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
-    BEGIN
-        SET @MENSAJE = 'La descripcion no puede ser nula ni estar vacia';
-        RETURN;
-    END
-
-    -- Insertar el nuevo cargo con estado activo (1)
+    -- Insertar el nuevo cargo con estado activo
     INSERT INTO Cargo (NombreCargo, DescripCargo)
     VALUES (@NombreC, @DescripcionC);
 
@@ -43,10 +34,10 @@ END;
 GO
 
 --------------------UPDATE CARGO------------------------
-CREATE PROCEDURE UPDATE_CARGO                           --- Esta como raro que en este si lo implementaste y en el otro no :|
+CREATE PROCEDURE UPDATE_CARGO                       
     @CDC UNIQUEIDENTIFIER,
-    @NombreC NVARCHAR(50),   --- NO ESTA VALIDADO
-    @DescripcionC NVARCHAR(MAX),   --- NO ESTA VALIDADO
+    @NombreC NVARCHAR(50),   
+    @DescripcionC NVARCHAR(MAX),   
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
@@ -55,7 +46,7 @@ BEGIN
         SET @MENSAJE = 'El nombre o la descripcion no pueden estar vacios';
         RETURN;
     END
-
+	
     -- Buscamos el codigo del cargo
     DECLARE @cargo_exist AS BIT;
     SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);
@@ -95,13 +86,17 @@ GO
 
 ------------------------------------Eliminar CARGO-----------------------
 
-
---- NO VALIDAS LA NULIDAD
 CREATE PROCEDURE ELIMINAR_CARGO 
     @CDC UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+	IF (@CDC IS NULL)
+	BEGIN
+		SET @MENSAJE = 'El codigo no puede ser nulo';
+		RETURN;
+	END
+
     -- Buscado el cargo
     DECLARE @cargo_exist AS BIT;
     SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);
@@ -134,13 +129,18 @@ GO
 
 -----------Activar CARGO--------------------
 
-
---- NO VALIDAS LA NULIDAD
 CREATE PROCEDURE ACTIVAR_CARGO 
     @CDC UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
+
+	IF (@CDC IS NULL)
+	BEGIN
+		SET @MENSAJE = 'El codigo no puede ser nulo';
+		RETURN;
+	END
+
    -- Buscado el cargo
     DECLARE @cargo_exist AS BIT;
     SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WHERE CodifoCargo = @CDC);

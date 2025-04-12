@@ -16,7 +16,7 @@ CREATE PROCEDURE INSERCCION_EMPLEADO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar que los datos obligatorios no sean vacios o nulos
+    -- Validamos que los datos obligatorios no sean vacios o nulos
     --len sirve para ver la longitud
     IF (LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
         LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
@@ -123,7 +123,7 @@ CREATE PROCEDURE UPDATE_EMPLEADO
     @MENSAJE VARCHAR(100) OUTPUT
 AS
 BEGIN
-    -- Validar que los datos obligatorios no sean vacios o nulos
+    -- Validamos que los datos obligatorios no sean vacios o nulos
     --len sirve para ver la longitud
     IF (LEN(@CDE)=0 OR LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
         LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
