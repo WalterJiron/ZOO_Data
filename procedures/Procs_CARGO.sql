@@ -7,13 +7,27 @@ GO
 CREATE PROCEDURE Insertar_Cargo
     @NombreC NVARCHAR(50),
     @DescripcionC NVARCHAR(MAX),
-    @MENSAJE VARCHAR(100) OUTPUT
+    @MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
 	---VALIDAR QUE NO SEA NULO y validamos espacios en blanco
     IF @NombreC IS NULL OR LTRIM(RTRIM(@NombreC)) = '' OR @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
     BEGIN
-        SET @MENSAJE = 'El nombre o la descripcion no pueden estar vacios';
+        SET @MENSAJE = 'Los campos no pueden estar vacios';
+        RETURN;
+    END
+
+    -- Miramos que el nombre no sea muy pequeño o muy grande
+    IF LEN(@NombreC) < 3 OR LEN(@NombreC) > 100
+    BEGIN
+        SET @MENSAJE = 'El nombre tiene que tener al menos 3 caracteres minimo y 100 maximos.';
+        RETURN;
+    END
+
+    -- Miramos que la decripcion no sea muy pequeño o muy grande
+    IF LEN(@DescripcionC) < 15 OR LEN(@DescripcionC) > 250
+    BEGIN
+        SET @MENSAJE = 'La decripcion tiene que tener al menos 15 caracteres minimo y 250 maximos.';
         RETURN;
     END
 
@@ -43,7 +57,19 @@ AS
 BEGIN
     IF @NombreC IS NULL OR LTRIM(RTRIM(@NombreC)) = '' OR @DescripcionC IS NULL OR LTRIM(RTRIM(@DescripcionC)) = ''
     BEGIN
-        SET @MENSAJE = 'El nombre o la descripcion no pueden estar vacios';
+        SET @MENSAJE = 'Los campos no pueden estar vacios';
+        RETURN;
+    END
+
+    IF LEN(@NombreC) < 3 OR LEN(@NombreC) > 100
+    BEGIN
+        SET @MENSAJE = 'El nombre tiene que tener al menos 3 caracteres minimo y 100 maximos.';
+        RETURN;
+    END
+
+    IF LEN(@DescripcionC) < 15 OR LEN(@DescripcionC) > 250
+    BEGIN
+        SET @MENSAJE = 'La decripcion tiene que tener al menos 15 caracteres minimo y 250 maximos.';
         RETURN;
     END
 	
@@ -152,18 +178,19 @@ BEGIN
         RETURN;
     END
 
-    -- Verificar si el cargo ya esta inactivo
-    IF @cargo_exist = 0
+    -- Verificar si el cargo ya esta activo
+    IF @cargo_exist = 1
     BEGIN
-        SET @MENSAJE = 'El cargo ya se encuentra inactivo';
+        SET @MENSAJE = 'El cargo ya se encuentra activo';
         RETURN;
     END
 
     -- Desactivar el cargo
     UPDATE Cargo SET
-        EstadoCargo = 0,
+        EstadoCargo = 1,
 		DateDelete = NULL
     WHERE CodifoCargo = @CDC;
+
     -- Mensaje de exito
     SET @MENSAJE = 'Activacion con exito';
 END;

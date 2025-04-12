@@ -1,4 +1,4 @@
----- PROC CONTINENTE ----   10/10
+---- PROC CONTINENTE ----   
 
 --	Insertar continente --
 

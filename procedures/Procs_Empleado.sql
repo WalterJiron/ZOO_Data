@@ -1,4 +1,4 @@
-use ZOO;
+use ZOO; 
 
 GO
 
@@ -15,9 +15,8 @@ CREATE PROCEDURE INSERCCION_EMPLEADO
     @IdCargo UNIQUEIDENTIFIER,
     @MENSAJE VARCHAR(100) OUTPUT
 AS
-BEGIN
+BEGIN 
     -- Validamos que los datos obligatorios no sean vacios o nulos
-    --len sirve para ver la longitud
     IF (LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
         LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
     BEGIN
@@ -25,24 +24,24 @@ BEGIN
         RETURN;
     END
 
-    -- Validamos que el cargo exista
+    -- Validamos que los nombre no sean muy cortos
     IF LEN(@PrimerNE) < 3 OR LEN(@SegundoNE) < 3 OR LEN(@PrimerAE) < 3 OR LEN(@SegundoAE) < 3
     BEGIN
         SET @MENSAJE = 'Los nombres y apellidos deben tener al menos 3 caracteres';
         RETURN;
     END
 
-    -- Validamos que el cargo exista
+    -- Validamos que los nombre no sean muy largo
     IF LEN(@PrimerNE) > 25 OR LEN(@SegundoNE) > 25 OR LEN(@PrimerAE) > 25 OR LEN(@SegundoAE) > 25
     BEGIN
         SET @MENSAJE = 'Los nombres y apellidos no pueden tener mas de 25 caracteres';
         RETURN;
     END
 
-    -- Validamos que el cargo exista
-    IF LEN(@DIREMPLEADO) < 5
+    -- Validamos que la direccion no sea muy corta o muy larga
+    IF LEN(@DIREMPLEADO) < 10 OR LEN(@DIREMPLEADO) < 10
     BEGIN
-        SET @MENSAJE = 'La direccion debe tener al menos 5 caracteres';
+        SET @MENSAJE = 'La direccion debe tener al menos 10 caracteres y un maximo de 200 caracteres.';
         RETURN;
     END
 
@@ -72,7 +71,7 @@ BEGIN
                 WHEN EmailE = @EMAIL THEN 'email'
             END
     FROM Empleado
-    WHERE DireccionE = @DIREMPLEADO OR TelefonoE = @TELEFONO OR EmailE = @EMAIL;
+    WHERE TelefonoE = @TELEFONO OR EmailE = @EMAIL;
 
     IF @CampoDuplicado IS NOT NULL
     BEGIN
@@ -83,24 +82,29 @@ BEGIN
     -- Validar que el telefono comience con 2, 5, 7 u 8
     IF (@TELEFONO NOT LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        SET @MENSAJE = 'El primer digito debe ser 2,5,7 u 8';
+        SET @MENSAJE = 'El primer digito debe ser 2,5,7 u 8 y los demas numeros deben ser numericos.';
         RETURN;
     END
 
-    -- Validar que la fecha de ingreso no sea mayor a la actual
-    IF (@FECHAINGRE > GETDATE())
+    -- Validamos que la fecha de ingreso no sea mayor que la fecha de inauguracion
+    IF (@FECHAINGRE < TRY_CONVERT(DATE, '2000/05/18'))
     BEGIN
-        SET @MENSAJE = 'La fecha no puede ser superior a la actual';
+        SET @MENSAJE = 'La fecha de ingreso no puede ser inferior a la fecha de inauguracion';
+        RETURN;
+    END
+
+    IF (@FECHAINGRE < TRY_CONVERT(DATE, DATEADD(MONTH, 1, GETDATE())))
+    BEGIN
+        SET @MENSAJE = 'La fecha de ingreso no puede ser superior a un mes.';
         RETURN;
     END
 
     -- Insertar empleado
     INSERT INTO Empleado
         (PNE, SNE, PAE, SAE, DireccionE, TelefonoE, EmailE, FechaIngreso, IdCargo)
-    VALUES
-        (
-            @PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO,
-            @TELEFONO, @EMAIL, @FECHAINGRE, @IdCargo
+    VALUES(
+        @PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO,
+        @TELEFONO, @EMAIL, @FECHAINGRE, @IdCargo
     );
 
     SET @MENSAJE = 'Inserccion realizada con exito';
@@ -197,7 +201,7 @@ BEGIN
                 WHEN EmailE = @EMAIL THEN 'email'
             END
     FROM Empleado
-    WHERE DireccionE = @DIREMPLEADO OR TelefonoE = @TELEFONO OR EmailE = @EMAIL;
+    WHERE TelefonoE = @TELEFONO OR EmailE = @EMAIL AND CodigEmpleado <> @CDE;
 
     IF @CampoDuplicado IS NOT NULL
     BEGIN
@@ -208,14 +212,20 @@ BEGIN
     -- Validar que el telefono comience con 2, 5, 7 u 8
     IF (@TELEFONO NOT LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        SET @MENSAJE = 'El primer digito debe ser 2,5,7 u 8';
+        SET @MENSAJE = 'El primer digito debe ser 2,5,7 u 8 y los demas numeros deben ser numericos.';
         RETURN;
     END
 
-    -- Validar que la fecha de ingreso no sea mayor a la actual
-    IF (@FECHAINGRE > GETDATE())
+    -- Validamos que la fecha de ingreso no sea mayor que la fecha de inauguracion
+    IF (@FECHAINGRE < TRY_CONVERT(DATE, '2000/05/18'))
     BEGIN
-        SET @MENSAJE = 'La fecha no puede ser superior a la actual';
+        SET @MENSAJE = 'La fecha de ingreso no puede ser inferior a la fecha de inauguracion';
+        RETURN;
+    END
+
+    IF (@FECHAINGRE < TRY_CONVERT(DATE, DATEADD(MONTH, 1, GETDATE())))
+    BEGIN
+        SET @MENSAJE = 'La fecha de ingreso no puede ser superior a un mes.';
         RETURN;
     END
 
@@ -301,14 +311,14 @@ BEGIN
         RETURN;
     END
 
-    -- Verificar si el empleado ya esta inactivo
-    IF(@empleado_existe = 0)
+    -- Verificar si el empleado ya esta activo
+    IF(@empleado_existe = 1)
     BEGIN
-        SET @MENSAJE = 'El empleado ya esta inactivo';
+        SET @MENSAJE = 'El empleado ya esta activo';
         RETURN;
     END
 
-    -- Actualizar el estado a inactivo
+    -- Actualizar el estado a activo
     UPDATE Empleado set
         EstadoEmpleado = 1,
 		DateDelete= NULL
