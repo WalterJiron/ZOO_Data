@@ -2,7 +2,7 @@ USE ZOO
 
 GO
 --------------------------INSERCCION GUIAITINERARIO---------------------------
-CREATE PROC INSERTAR_GUIAITINERARIO
+CREATE PROC INSERTAR_GUIA_ITINERARIO
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdItinerario UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100) OUTPUT
@@ -30,6 +30,19 @@ BEGIN
 		SET @MENSAJE='El empleado esta inactivo';
 		RETURN;
 	END
+	----------------Buscamos el cargo
+	DECLARE @NOMBRE_CARGO AS NVARCHAR(50)
+	SET @NOMBRE_CARGO = (
+						SELECT c.NombreCargo FROM Empleado e join Cargo c 
+						ON e.IdCargo = c.CodifoCargo
+						WHERE e.CodigEmpleado = @IdEmpleado
+						);
+	------------Verficamos que el cuiador no sea un guia
+	IF(@NOMBRE_CARGO = 'Cuidador')
+	BEGIN
+		SET @MENSAJE ='El cuidador no puede ser un guia';
+		RETURN;
+	END
 
 	DECLARE @EXIST_ITINERARIO AS BIT
 	SET @EXIST_ITINERARIO=(SELECT Estado FROM Itinerario WHERE CodigoIti = @IdItinerario);
@@ -46,6 +59,12 @@ BEGIN
 		SET @MENSAJE='El itinerario esta inactivo';
 		RETURN;
 	END
+	-----------------verificar si el guia esta asigando al itinerario
+	IF EXISTS (SELECT 1 FROM GuiaItinerario WHERE Empleado = @IdEmpleado AND Itinerario = @IdItinerario);
+	BEGIN
+		SET @MENSAJE = 'El empleado ya esta asignado a este itinerario';
+		RETURN;
+	END
 
     -- Insertar la relacion
     INSERT INTO GuiaItinerario (Empleado, Itinerario)
@@ -58,7 +77,7 @@ END
 GO
 
 ---------------------------upadte GUIAITINERARIO---------------------------------
-CREATE PROC UPDATE_GUIAITINERARIO
+CREATE PROC UPDATE_GUIA_ITINERARIO
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdItinerario UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100) OUTPUT
@@ -84,6 +103,20 @@ BEGIN
 	IF(@EXIST_EMPLEADO = 0)
 	BEGIN
 		SET @MENSAJE='El empleado esta inactivo';
+		RETURN;
+	END
+
+		----------------Buscamos el cargo
+	DECLARE @NOMBRE_CARGO AS NVARCHAR(50)
+	SET @NOMBRE_CARGO = (
+						SELECT c.NombreCargo FROM Empleado e join Cargo c 
+						ON e.IdCargo = c.CodifoCargo
+						WHERE e.CodigEmpleado = @IdEmpleado
+						);
+	------------Verficamos que el cuiador no sea un guia
+	IF(@NOMBRE_CARGO = 'Cuidador')
+	BEGIN
+		SET @MENSAJE ='El cuidador no puede ser un guia';
 		RETURN;
 	END
 

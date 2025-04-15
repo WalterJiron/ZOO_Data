@@ -4,7 +4,7 @@ USE ZOO
 GO
 
 -----------------------INSERTAR CUIDADOR ESPECIE------------------------------
-CREATE PROC Insertar_CuidadorEspecie
+CREATE PROC Insertar_Cuidador_Especie
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @FechaAsignacion DATE,
@@ -44,6 +44,20 @@ BEGIN
 	DECLARE @EXIST_ESPECIE AS BIT
 	SET @EXIST_ESPECIE = (SELECT Estado FROM Especie WHERE CodigoEspecie = @IdEspecie);
 
+	--------Buscamos el cargo del empleado
+	DECLARE @NOMBRE_CARGO AS NVARCHAR(50)
+	SET @NOMBRE_CARGO = (
+						SELECT c.NombreCargo FROM Empleado e join Cargo c 
+						on e.IdCargo = c.CodifoCargo 
+						WHERE e.CodigEmpleado = @IdEmpleado
+						);
+	------VALIDAR QUE EL GUIA NO SEA UN CUIDADOR
+	IF (@NOMBRE_CARGO = 'Guia')
+	BEGIN
+		SET @MENSAJE = 'El guia no puede ser un cuidador';
+		RETURN;
+	END
+
     -- Validar que la especie exista
     IF (@EXIST_ESPECIE IS NULL)
     BEGIN
@@ -54,8 +68,15 @@ BEGIN
 	IF(@EXIST_ESPECIE = 0)
 	BEGIN
 		SET @MENSAJE='La especie se encuentra inactiva';
+		RETURN;
 	END
 
+	----------VERIFICAR SI NO HAY MAS DE UN CUIADADOR ASIGNADO A LA ESPECIE---------------------
+	IF EXISTS (SELECT 1 FROM CuidadorEspecie WHERE IdEmpleado = @IdEmpleado AND IdEspecie = @IdEspecie)
+	BEGIN
+		SET @MENSAJE = 'Ya hay un cuidador asiganado a esta especie';
+		RETURN;
+	END
     -- Insertar el registro
     INSERT INTO CuidadorEspecie (IdEmpleado, IdEspecie, FechaAsignacion)
     VALUES (@IdEmpleado, @IdEspecie, @FechaAsignacion);
@@ -66,7 +87,7 @@ END;
 GO
 
 ------------------------------------update ---------------------------------
-CREATE PROC Actualizar_CuidadorEspecie
+CREATE PROC Actualizar_Cuidador_Especie
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @FechaAsignacion DATE,
@@ -100,6 +121,20 @@ BEGIN
 	IF(@EXSITS_EMPLEADO = 0)
 	BEGIN
 		SET @MENSAJE = 'El empleado esta inactivo';
+		RETURN;
+	END
+
+		--------Buscamos el cargo del empleado
+	DECLARE @NOMBRE_CARGO AS NVARCHAR(50)
+	SET @NOMBRE_CARGO = (
+						SELECT c.NombreCargo FROM Empleado e join Cargo c 
+						on e.IdCargo = c.CodifoCargo 
+						WHERE e.CodigEmpleado = @IdEmpleado
+						);
+	------VALIDAR QUE EL GUIA NO SEA UN CUIDADOR
+	IF (@NOMBRE_CARGO = 'Guia')
+	BEGIN
+		SET @MENSAJE = 'El guia no puede ser un cuidador';
 		RETURN;
 	END
 
