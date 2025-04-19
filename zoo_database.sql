@@ -6,7 +6,7 @@ USE ZOO;
 
 GO
 
--- Tabla de Roles
+-- Tabla de Roles       API
 CREATE TABLE Rol(   --- El sistema solo nos habla del rol Admin 
     CodigoRol UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NombreRol NVARCHAR(50) UNIQUE NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE Rol(   --- El sistema solo nos habla del rol Admin
 
 GO
 
--- Tabla de Usuarios
+-- Tabla de Usuarios         API
 CREATE TABLE Users(
     CodigoUser UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NameUser NVARCHAR(50) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE Users(
 
 GO
 
--- Tabla de Zonas
+-- Tabla de Zonas       API
 CREATE TABLE Zona (
     CodigoZona UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NameZona NVARCHAR(100) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE Zona (
 
 GO
 
--- Tabla de Especies
+-- Tabla de Especies      API
 CREATE TABLE Especie (
     CodigoEspecie UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     Nombre NVARCHAR(100) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE Especie (
 
 GO
 
--- Tabla de Continentes
+-- Tabla de Continentes       API
 CREATE TABLE Continente (
     IdCont INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     Nombre NVARCHAR(50) NOT NULL
@@ -65,7 +65,7 @@ CREATE TABLE Continente (
 
 GO
 
--- Tabla de Hábitats
+-- Tabla de Hábitats  API
 CREATE TABLE Habitat (
     CodigoHabitat UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     Nombre VARCHAR(100) NOT NULL,
@@ -79,22 +79,22 @@ CREATE TABLE Habitat (
 
 GO
 
--- Tabla de Itinerarios
+-- Tabla de Itinerarios   API
 CREATE TABLE Itinerario (
     CodigoIti UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     Duracion TIME NOT NULL,
     Longitud DECIMAL(10,2) NOT NULL,
     MaxVisitantes INT NOT NULL,
     NumEspecies INT NOT NULL,
-    Fecha DATE NOT NULL,       --- La fecha en la que se realizara el itinerario
-    Hora TIME NOT NULL,        --- La hora en la que se realizara el itinerario
+    Fecha DATE NOT NULL,                --- La fecha en la que se realizara el itinerario
+    Hora TIME NOT NULL,                 --- La hora en la que se inicia
     DateDelete DATETIME,
     Estado BIT DEFAULT 1
 );
 
 GO
 
--- Tabla de Cargos
+-- Tabla de Cargos       API
 CREATE TABLE Cargo(
     CodifoCargo UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NombreCargo NVARCHAR(50) NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE Cargo(
 
 GO
 
--- Tabla de Empleados
+-- Tabla de Empleados     API
 CREATE TABLE Empleado(
     CodigEmpleado UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     PNE NVARCHAR(25) NOT NULL,   -- Primer Nombre Empleado
@@ -127,7 +127,7 @@ GO
 
 ------------------------------------------ Tablas de Relaciones ------------------------------------------
 
--- Relación entre Hábitats y Continentes (Muchos a Muchos)
+-- Relación entre Hábitats y Continentes (Muchos a Muchos) Listo
 CREATE TABLE HabitatContinente (
     Habitat UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Habitat(CodigoHabitat) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     Cont INT FOREIGN KEY REFERENCES Continente(IdCont) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE HabitatContinente (
 
 GO
 
--- Relación entre Especies y Hábitats (Muchos a Muchos)
+-- Relación entre Especies y Hábitats (Muchos a Muchos) Listo
 CREATE TABLE EspecieHabitat (
     Especie UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Especie(CodigoEspecie) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     Habitat UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Habitat(CodigoHabitat) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -150,7 +150,7 @@ CREATE TABLE EspecieHabitat (
 
 GO
 
--- Relación entre Itinerarios y Zonas (Muchos a Muchos)
+-- Relación entre Itinerarios y Zonas (Muchos a Muchos) Listo
 CREATE TABLE ItinerarioZona (
     Itinerario UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Itinerario(CodigoIti) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     Zona UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Zona(CodigoZona) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE ItinerarioZona (
 
 GO
 
--- Relación entre Guías e Itinerarios (Verificar que el empleado sea guía)
+-- Relación entre Guías e Itinerarios (Verificar que el empleado sea guía) Listo
 CREATE TABLE GuiaItinerario (
     Empleado UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Empleado(CodigEmpleado) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,  
     Itinerario UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Itinerario(CodigoIti) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,

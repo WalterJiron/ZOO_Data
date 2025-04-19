@@ -4,7 +4,8 @@ GO
 
 -- Insertar datos en la tabla Rol
 INSERT INTO Rol (NombreRol, DescripRol)
-VALUES ('Administrador', 'Tiene acceso completo al sistema');
+VALUES ('Administrador', 'Tiene acceso completo al sistema'),
+('Usuario', 'Es un usuario normal');
 
 GO
 
