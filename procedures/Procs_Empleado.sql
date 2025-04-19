@@ -13,7 +13,8 @@ CREATE PROCEDURE INSERCCION_EMPLEADO
     @EMAIL NVARCHAR(100),
     @FECHAINGRE DATE,
     @IdCargo UNIQUEIDENTIFIER,
-    @MENSAJE VARCHAR(100) OUTPUT
+    @MENSAJE VARCHAR(100) OUTPUT,
+    @CodigoEmpleado UNIQUEIDENTIFIER OUTPUT
 AS
 BEGIN 
     -- Validamos que los datos obligatorios no sean vacios o nulos
@@ -99,11 +100,14 @@ BEGIN
         RETURN;
     END
 
+    SET @CodigoEmpleado = NEWID();
+
     -- Insertar empleado
-    INSERT INTO Empleado
-        (PNE, SNE, PAE, SAE, DireccionE, TelefonoE, EmailE, FechaIngreso, IdCargo)
+    INSERT INTO Empleado(
+        CodigEmpleado, PNE, SNE, PAE, SAE, 
+        DireccionE, TelefonoE, EmailE, FechaIngreso, IdCargo)
     VALUES(
-        @PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO,
+        @CodigoEmpleado, @PrimerNE, @SegundoNE, @PrimerAE, @SegundoAE, @DIREMPLEADO,
         @TELEFONO, @EMAIL, @FECHAINGRE, @IdCargo
     );
 
