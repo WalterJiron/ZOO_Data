@@ -2,10 +2,10 @@ Use ZOO
 
 GO
 --------------------------activar habitadContinente-----------------
-CREATE PROC Activar_HabitatContinente
+ALTER PROC Activar_HabitatContinente
 @Habitat UNIQUEIDENTIFIER,
 @Cont INT,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -36,6 +36,7 @@ BEGIN
 		BEGIN
 			ROLLBACK TRANSACTION;
 			SET @MENSAJE='Esta activa';
+			RETURN;
 		END
 	
 		-- Cambiar estado a activo 

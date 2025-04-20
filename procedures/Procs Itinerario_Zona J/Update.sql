@@ -4,12 +4,12 @@ GO
 
 
 ---------------------Update itinerario zona---------------------------------
-CREATE PROC ACTUALIZAR_ITINERARIO_ZONA
+ALTER PROC ACTUALIZAR_ITINERARIO_ZONA
 @IDITINERARIO_VIEJO UNIQUEIDENTIFIER,
 @IDZONA_VIEJO UNIQUEIDENTIFIER,
 @IdItinerario UNIQUEIDENTIFIER,
 @IDzona UNIQUEIDENTIFIER,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -60,11 +60,22 @@ BEGIN
 			RETURN;
 		END
 		----Ver si existe la relacion entre ambas tablas
-		IF EXISTS(SELECT 1 FROM ItinerarioZona WITH(UPDLOCK ,ROWLOCK) WHERE Itinerario=@IDITINERARIO_VIEJO AND Zona=@IDZONA_VIEJO)
+		IF NOT EXISTS(SELECT 1 FROM ItinerarioZona WITH(UPDLOCK ,ROWLOCK) WHERE Itinerario=@IDITINERARIO_VIEJO AND Zona=@IDZONA_VIEJO)
 		BEGIN
 			ROLLBACK TRANSACTION;
-			SET @MENSAJE='Ya existe una relacion entre el itinerario y la zona';
-			RETURN
+			SET @MENSAJE='No existe una relacion entre el itinerario y la zona que quiere actualizar';
+			RETURN;
+		END
+
+		IF  EXISTS(
+			SELECT 1 FROM ItinerarioZona WITH(UPDLOCK ,ROWLOCK) 
+			WHERE Itinerario=@IdItinerario AND Zona=@IDzona AND Itinerario <> @IDITINERARIO_VIEJO 
+				AND Zona <> @IDZONA_VIEJO
+			)
+		BEGIN
+			ROLLBACK TRANSACTION;
+			SET @MENSAJE='Ya existe una relacion entre el itinerario y la zona que quiere actualizar';
+			RETURN;
 		END
 
 		UPDATE ItinerarioZona SET 

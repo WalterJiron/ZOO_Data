@@ -4,10 +4,9 @@ GO
 
 
 ------------------------------------update ---------------------------------
-CREATE PROC Actualizar_Cuidador_Especie
+alter PROC Actualizar_Cuidador_Especie
 @IDEMPLEADO_VIEJO UNIQUEIDENTIFIER,
 @IDESPECIE_VIEJO UNIQUEIDENTIFIER,
-@FECHAASIGNACION_VIEJO DATE,
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @FechaAsignacion DATE,
@@ -18,7 +17,7 @@ BEGIN
 
 	BEGIN TRY
 		-- Validar que los parametros no sean nulos
-		IF (@FECHAASIGNACION_VIEJO IS NULL OR  @IDEMPLEADO_VIEJO IS NULL OR @IDESPECIE_VIEJO IS NULL OR @IdEmpleado IS NULL OR @IdEspecie IS NULL OR @FechaAsignacion IS NULL)
+		IF (@IDEMPLEADO_VIEJO IS NULL OR @IDESPECIE_VIEJO IS NULL OR @IdEmpleado IS NULL OR @IdEspecie IS NULL OR @FechaAsignacion IS NULL)
 		BEGIN
 			SET @MENSAJE = 'No pueden haber parametros nulos';
 			RETURN;
@@ -31,11 +30,6 @@ BEGIN
 			RETURN;
 		END
 
-		IF (@FechaAsignacion < GETDATE())
-		BEGIN 
-			SET @MENSAJE = 'La fecha de asigancion no puede ser del pasado';
-			RETURN;
-		END
 
 		BEGIN TRANSACTION;
 
@@ -104,7 +98,7 @@ BEGIN
 				IdEmpleado=@IdEmpleado,
 				IdEspecie=@IdEspecie,
 				FechaAsignacion = @FechaAsignacion
-		WHERE IdEmpleado = @IDEMPLEADO_VIEJO AND IdEspecie = @IDESPECIE_VIEJO AND FechaAsignacion = @FECHAASIGNACION_VIEJO;
+		WHERE IdEmpleado = @IDEMPLEADO_VIEJO AND IdEspecie = @IDESPECIE_VIEJO;
 
 		 -- Validar que se actualizo exactamente 1 registro
         IF @@ROWCOUNT <> 1

@@ -4,10 +4,10 @@ GO
 
 
 --------Inserccion HabitadContinentes-------------------------
-Create Proc Insertar_HabitadContinente
+ALTER Proc Insertar_HabitadContinente
 @Habitad UNIQUEIDENTIFIER,
 @CONTINENTE INT,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -48,6 +48,12 @@ BEGIN
 		BEGIN 
 			ROLLBACK TRANSACTION;
 			SET @MENSAJE ='El id del continente proporcionado no existe';
+			RETURN;
+		END
+		IF EXISTS (SELECT 1 FROM HabitatContinente WITH (UPDLOCK,ROWLOCK)WHERE Habitat=@Habitad AND Cont = @CONTINENTE)
+		BEGIN
+			ROLLBACK TRANSACTION;
+			SET @MENSAJE = 'La relacion ya existe';
 			RETURN;
 		END
 

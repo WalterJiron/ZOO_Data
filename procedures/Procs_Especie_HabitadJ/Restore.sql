@@ -7,10 +7,10 @@ USE ZOO
 GO
 
 ----------------------activar especiehabitad--------------------------
-CREATE PROC Activar_EspecieHabitat
+ALTER PROC Activar_EspecieHabitat
 @Especie UNIQUEIDENTIFIER,
 @Habitat UNIQUEIDENTIFIER,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
    SET NOCOUNT ON;

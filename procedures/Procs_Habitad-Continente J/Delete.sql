@@ -3,10 +3,10 @@ USE ZOO
 GO
 
 ------------------ELIMINACION HABITADCONTINENTE---------------------
-CREATE PROC Eliminar_HabitatContinente
+ALTER PROC Eliminar_HabitatContinente
 @Habitat UNIQUEIDENTIFIER,
 @Cont INT,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -36,7 +36,8 @@ BEGIN
 		IF(@existencia=0)
 		BEGIN
 			ROLLBACK TRANSACTION;
-			SET @MENSAJE='Esta inactiva';
+			SET @MENSAJE='ya se encuentra activa';
+			RETURN;
 		END
 		-- Cambiar estado a inactivo 
 		UPDATE HabitatContinente SET

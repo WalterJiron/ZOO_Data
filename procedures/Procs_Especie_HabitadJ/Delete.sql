@@ -4,10 +4,10 @@ GO
 
 
 -------------------ELIMINAR ESPECIE HABITAD------------------
-CREATE PROC Desactivar_EspecieHabitat
+ALTER PROC Desactivar_EspecieHabitat
 @Especie UNIQUEIDENTIFIER,
 @Habitat UNIQUEIDENTIFIER,
-@MENSAJE VARCHAR(100) OUTPUT
+@MENSAJE NVARCHAR(100) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;

@@ -3,7 +3,7 @@ USE ZOO
 GO
 
 ---------------------------activar---------------------------------
-CREATE PROCEDURE Activar_CuidadorEspecie
+ALTER PROCEDURE Activar_CuidadorEspecie
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100) OUTPUT
