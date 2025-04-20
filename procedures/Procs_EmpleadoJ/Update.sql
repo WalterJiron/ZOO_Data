@@ -4,7 +4,6 @@ GO
 
 -------------------------------update empleado--------------------------------------
 CREATE PROCEDURE UPDATE_EMPLEADO
-	@IDEMPLEADO_VIEJO UNIQUEIDENTIFIER,
     @CDE UNIQUEIDENTIFIER,
     @PrimerNE NVARCHAR(25),
     @SegundoNE NVARCHAR(25),
@@ -22,7 +21,7 @@ BEGIN
 
     BEGIN TRY
 		-- Validamos que los datos obligatorios no sean vacios o nulos
-		IF (LEN(@IDEMPLEADO_VIEJO)=0 OR LEN(@CDE)=0 OR LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
+		IF (LEN(@CDE)=0 OR LEN(@PrimerNE) = 0 OR LEN(@SegundoNE) = 0 OR LEN(@PrimerAE) = 0 OR LEN(@SegundoAE) = 0 OR
 			LEN(@DIREMPLEADO) = 0 OR @TELEFONO IS NULL OR LEN(@EMAIL) = 0 OR @IdCargo IS NULL)
 		BEGIN
 			SET @MENSAJE = 'Los campos no pueden ser valores nulos';
@@ -33,7 +32,7 @@ BEGIN
 
 		-- Validamos que el empleado exista
 		DECLARE @empleado_existe BIT;
-		SET @empleado_existe = (SELECT EstadoEmpleado FROM Empleado WITH (UPDLOCK,ROWLOCK) WHERE CodigEmpleado = @IDEMPLEADO_VIEJO);
+		SET @empleado_existe = (SELECT EstadoEmpleado FROM Empleado WITH (UPDLOCK,ROWLOCK) WHERE CodigEmpleado = @CDE);
 
 		-- Verificar si el empleado existe
 		IF(@empleado_existe IS NULL)
@@ -140,7 +139,7 @@ BEGIN
 			EmailE = @EMAIL,
 			FechaIngreso = @FECHAINGRE,
 			IdCargo = @IdCargo
-		WHERE CodigEmpleado = @IDEMPLEADO_VIEJO;
+		WHERE CodigEmpleado = @CDE;
 
 		 -- Validar que se actualizo exactamente 1 registro
         IF @@ROWCOUNT <> 1

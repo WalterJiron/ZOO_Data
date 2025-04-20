@@ -3,7 +3,6 @@ USE ZOO
 GO
 --------------------UPDATE CARGO------------------------
 CREATE PROCEDURE UPDATE_CARGO   
-	@CDC_VIEJO UNIQUEIDENTIFIER,
     @CDC UNIQUEIDENTIFIER,
     @NombreC NVARCHAR(50),   
     @DescripcionC NVARCHAR(MAX),   
@@ -34,7 +33,7 @@ BEGIN
 		BEGIN TRANSACTION;
 		-- Buscamos el codigo del cargo
 		DECLARE @cargo_exist AS BIT;
-		SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WITH (UPDLOCK,ROWLOCK) WHERE CodifoCargo = @CDC_VIEJO);
+		SET @cargo_exist = (SELECT EstadoCargo FROM Cargo WITH (UPDLOCK,ROWLOCK) WHERE CodifoCargo = @CDC);
 
 		-- Verificar si el cargo existe
 		IF @cargo_exist IS NULL
@@ -53,7 +52,7 @@ BEGIN
 		END
 
 		-- Verificar si el nombre del cargo ya esta en uso
-		IF EXISTS (SELECT 1 FROM Cargo WITH (UPDLOCK,ROWLOCK) WHERE NombreCargo = @NombreC AND CodifoCargo <> @CDC_VIEJO)
+		IF EXISTS (SELECT 1 FROM Cargo WITH (UPDLOCK,ROWLOCK) WHERE NombreCargo = @NombreC AND CodifoCargo <> @CDC)
 		BEGIN
 			ROLLBACK TRANSACTION;
 			SET @MENSAJE = 'Nombre de cargo ya existente';
@@ -64,7 +63,7 @@ BEGIN
 		UPDATE Cargo SET
 			NombreCargo = TRIM(@NombreC),
 			DescripCargo = TRIM(@DescripcionC)
-		WHERE CodifoCargo = @CDC_VIEJO;
+		WHERE CodifoCargo = @CDC;
 
 		-- Validar que se actualizo
         IF @@ROWCOUNT <> 1
