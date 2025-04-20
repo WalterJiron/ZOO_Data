@@ -3,7 +3,7 @@ USE ZOO
 GO
 
 -----------------------------------UPDATE HABITADCONTINENTE
-ALTER PROCEDURE Update_HabitatContinente
+CREATE PROCEDURE Update_HabitatContinente
 @Habitad UNIQUEIDENTIFIER,
 @CONTINENTE INT,
 @HabitadVieja UNIQUEIDENTIFIER,

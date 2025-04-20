@@ -2,7 +2,7 @@ Use ZOO
 
 GO
 --------------------------activar habitadContinente-----------------
-ALTER PROC Activar_HabitatContinente
+CREATE PROC Activar_HabitatContinente
 @Habitat UNIQUEIDENTIFIER,
 @Cont INT,
 @MENSAJE NVARCHAR(100) OUTPUT

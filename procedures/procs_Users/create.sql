@@ -62,7 +62,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Verificar email unico con bloqueo
-        IF EXISTS (SELECT 1 FROM Users WITH (UPDLOCK) WHERE Email = @Email)
+        IF EXISTS (SELECT 1 FROM Users WITH (UPDLOCK, ROWLOCK) WHERE Email = @Email)
         BEGIN
             ROLLBACK TRANSACTION;
             SET @Mensaje = 'El correo ya esta registrado';

@@ -4,7 +4,7 @@ GO
 
 
 ------------------------------------update ---------------------------------
-alter PROC Actualizar_Cuidador_Especie
+CREATE PROC Actualizar_Cuidador_Especie
 @IDEMPLEADO_VIEJO UNIQUEIDENTIFIER,
 @IDESPECIE_VIEJO UNIQUEIDENTIFIER,
 @IdEmpleado UNIQUEIDENTIFIER,

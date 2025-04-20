@@ -59,7 +59,7 @@ BEGIN
             RETURN;
         END
 
-        IF (DATEDIFF(MINUTE, 0, @Duracion) + DATEDIFF(MINUTE, 0, @Hora)) >= 1440
+        IF (DATEDIFF(MINUTE, 0, @Duracion) + DATEDIFF(MINUTE, 0, @Hora)) >= 1440 
         BEGIN
             ROLLBACK TRANSACTION;
             SET @Mensaje = 'La duración excede el límite de 24 horas';

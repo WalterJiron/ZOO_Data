@@ -2,7 +2,6 @@ USE ZOO
 
 GO
 
-
 -----------------------INSERTAR CUIDADOR ESPECIE------------------------------
 CREATE PROC Insertar_Cuidador_Especie
 @IdEmpleado UNIQUEIDENTIFIER,
@@ -63,7 +62,7 @@ BEGIN
 							SELECT c.NombreCargo FROM Empleado e WITH (UPDLOCK) join Cargo c 
 							on e.IdCargo = c.CodifoCargo 
 							WHERE e.CodigEmpleado = @IdEmpleado
-							);
+					);
 		------VALIDAR QUE EL GUIA NO SEA UN CUIDADOR
 		IF (@NOMBRE_CARGO = 'Guia')
 		BEGIN

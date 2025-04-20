@@ -9,7 +9,7 @@ VALUES ('Administrador', 'Tiene acceso completo al sistema'),
 
 GO
 
--- Insertar datos en la tabla Users (con contraseñas encriptadas)
+/* -- Insertar datos en la tabla Users (con contraseñas encriptadas)
 INSERT INTO Users (NameUser, Email, Clave, Rol)
 VALUES (
     'Admin Principal', 'admin@zoo.com', 
@@ -20,7 +20,17 @@ VALUES (
     'Carlos Mendez', 'carlos@zoo.com', 
     HASHBYTES('SHA2_256', 'Carlos123'), 
     (SELECT CodigoRol FROM Rol WHERE NombreRol = 'Administrador')
-);
+);*/
+
+DECLARE @Mensaje NVARCHAR(100), @Rol UNIQUEIDENTIFIER;
+SELECT @Rol = CodigoRol FROM Rol WHERE NombreRol = 'Administrador';
+EXEC ProcInsertUser
+    @NameUser = 'Walter Jiron',
+    @Email = 'Walter@zoo.com',
+    @Clave = 'Walter.01',
+    @Rol = @Rol,
+    @Mensaje = @Mensaje OUTPUT;
+SELECT @Mensaje AS message;
 
 GO
 

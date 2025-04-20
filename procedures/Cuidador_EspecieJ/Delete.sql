@@ -3,7 +3,7 @@ USE ZOO
 GO
 
 ---------------------------------ELIMINAR------------------------------------
-ALTER PROCEDURE Eliminar_CuidadorEspecie
+CREATE PROCEDURE Eliminar_CuidadorEspecie
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100) OUTPUT

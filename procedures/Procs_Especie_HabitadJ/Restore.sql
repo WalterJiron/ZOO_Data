@@ -2,12 +2,8 @@ USE ZOO
 
 GO
 
-USE ZOO
-
-GO
-
 ----------------------activar especiehabitad--------------------------
-ALTER PROC Activar_EspecieHabitat
+CREATE PROC Activar_EspecieHabitat
 @Especie UNIQUEIDENTIFIER,
 @Habitat UNIQUEIDENTIFIER,
 @MENSAJE NVARCHAR(100) OUTPUT

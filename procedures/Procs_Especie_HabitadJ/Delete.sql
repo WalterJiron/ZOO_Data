@@ -4,7 +4,7 @@ GO
 
 
 -------------------ELIMINAR ESPECIE HABITAD------------------
-ALTER PROC Desactivar_EspecieHabitat
+CREATE PROC Desactivar_EspecieHabitat
 @Especie UNIQUEIDENTIFIER,
 @Habitat UNIQUEIDENTIFIER,
 @MENSAJE NVARCHAR(100) OUTPUT

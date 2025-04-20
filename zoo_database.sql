@@ -172,12 +172,12 @@ CREATE TABLE GuiaItinerario (
 
 GO
 
--- Relación entre Cuidadores y Especies (Verificar que el empleado sea cuidador)
+-- Relación entre Cuidadores y Especies (Verificar que el empleado sea cuidador) (SE REPARO)
 CREATE TABLE CuidadorEspecie (
     IdEmpleado UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Empleado(CodigEmpleado) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     IdEspecie UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Especie(CodigoEspecie) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     FechaAsignacion DATE NOT NULL,
-    PRIMARY KEY (IdEmpleado, IdEspecie, FechaAsignacion),
+    PRIMARY KEY (IdEmpleado, IdEspecie),
     DateCreate DATETIME DEFAULT GETDATE(),
     EstadoCE BIT DEFAULT 1
 );

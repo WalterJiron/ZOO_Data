@@ -3,7 +3,7 @@ USE ZOO
 GO
 
 ---------------------------activar---------------------------------
-ALTER PROCEDURE Activar_CuidadorEspecie
+CREATE PROCEDURE Activar_CuidadorEspecie
 @IdEmpleado UNIQUEIDENTIFIER,
 @IdEspecie UNIQUEIDENTIFIER,
 @MENSAJE VARCHAR(100) OUTPUT
@@ -36,7 +36,7 @@ BEGIN
 			RETURN;
 		END
 
-		-- Validar si ya está activa
+		-- Validar si ya estï¿½ activa
 		IF @EstadoActual = 1
 		BEGIN
 			ROLLBACK TRANSACTION;

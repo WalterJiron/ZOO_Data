@@ -4,7 +4,7 @@ GO
 
 
 --------Inserccion HabitadContinentes-------------------------
-ALTER Proc Insertar_HabitadContinente
+CREATE Proc Insertar_HabitadContinente
 @Habitad UNIQUEIDENTIFIER,
 @CONTINENTE INT,
 @MENSAJE NVARCHAR(100) OUTPUT

@@ -3,7 +3,7 @@ USE ZOO
 GO
 
 ------------------ELIMINACION HABITADCONTINENTE---------------------
-ALTER PROC Eliminar_HabitatContinente
+CREATE PROC Eliminar_HabitatContinente
 @Habitat UNIQUEIDENTIFIER,
 @Cont INT,
 @MENSAJE NVARCHAR(100) OUTPUT

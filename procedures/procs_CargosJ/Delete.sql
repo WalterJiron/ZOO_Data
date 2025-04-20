@@ -1,5 +1,6 @@
 USE ZOO
 
+GO
 ------------------------------------Eliminar CARGO-----------------------
 
 CREATE PROCEDURE ELIMINAR_CARGO 
