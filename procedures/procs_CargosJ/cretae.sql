@@ -33,7 +33,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Validar si el nombre del cargo ya existe
-        IF EXISTS (SELECT 1 FROM Cargo WHERE NombreCargo = @NombreC)
+        IF EXISTS (SELECT 1 FROM Cargo WITH(UPDLOCK ,ROWLOCK) WHERE NombreCargo = @NombreC)
         BEGIN
             ROLLBACK TRANSACTION;
             SET @MENSAJE = 'El nombre del cargo ya existe';
@@ -42,7 +42,7 @@ BEGIN
 
         -- Insertar el nuevo cargo con estado activo
         INSERT INTO Cargo (NombreCargo, DescripCargo)
-        VALUES (@NombreC, @DescripcionC);
+        VALUES (TRIM(@NombreC),TRIM(@DescripcionC));
 
          -- Verificar que se inserto correctamente
         IF @@ROWCOUNT <> 1
