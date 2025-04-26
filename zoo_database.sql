@@ -125,6 +125,23 @@ CREATE TABLE Empleado(
 
 GO
 
+-- Tabla del detalle de los empleados (NUEVA TABLA)
+CREATE TABLE DetalleEmpleado(
+    CodigoDetEmpleado UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
+    CodigEmpleado UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Empleado(CodigEmpleado) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Cedula NVARCHAR(16) CHECK(Cedula LIKE'[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][A-Z]') UNIQUE NOT NULL,
+    FechaNacimiento DATE NOT NULL,
+    Genero CHAR(1) CHECK(Genero IN ('M', 'F', 'O')) NOT NULL,
+    EstadoCivil NVARCHAR(20) CHECK(EstadoCivil IN ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre')) NOT NULL,  -- Hay que ver vien 
+    INSS NVARCHAR(9) CHECK(INSS LIKE'[0][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]') UNIQUE NOT NULL,
+    TelefonoEmergencia VARCHAR(8) CHECK(TelefonoEmergencia LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]') UNIQUE NOT NULL,
+    DateCreate DATETIME DEFAULT GETDATE(),
+    DateDelete DATETIME,
+    EstadoDetalleEmpleado BIT DEFAULT 1
+);
+
+GO
+
 ------------------------------------------ Tablas de Relaciones ------------------------------------------
 
 -- Relación entre Hábitats y Continentes (Muchos a Muchos) Listo
