@@ -52,7 +52,7 @@ BEGIN
         
         -- Validaciones que requieren acceso a la base de datos
         IF @Fecha < CAST(GETDATE() AS DATE) OR 
-          (@Fecha = CAST(GETDATE() AS DATE) AND @Hora <= CAST(GETDATE() AS TIME))
+          (@Fecha < CAST(GETDATE() AS DATE) AND @Hora <= CAST(GETDATE() AS TIME))
         BEGIN
             ROLLBACK TRANSACTION;
             SET @Mensaje = 'Fecha y hora deben ser futuras';
