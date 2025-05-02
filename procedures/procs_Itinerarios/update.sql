@@ -107,7 +107,8 @@ BEGIN
             MaxVisitantes = @MaxVisitantes,
             NumEspecies = @NumEspecies,
             Fecha = @Fecha,
-            Hora = @Hora
+            Hora = @Hora,
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoIti = @CodigoItinerario;
 
         -- Validar que se actualizo exactamente 1 registro

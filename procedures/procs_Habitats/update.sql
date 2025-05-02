@@ -93,7 +93,8 @@ BEGIN
             Nombre = TRIM(@Nombre),
             Clima = TRIM(@Clima),
             DescripHabitat = TRIM(@DescripHabitat),
-            CodigoZona = @CodigoZona
+            CodigoZona = @CodigoZona,
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoHabitat = @CodigoHabitat;
 
         -- Verificar que se actualizo exactamente 1 registro

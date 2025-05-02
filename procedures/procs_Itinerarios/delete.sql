@@ -40,7 +40,7 @@ BEGIN
 
         UPDATE Itinerario SET 
             Estado = 0, 
-            DateDelete = GETDATE()
+            DateDelete = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoIti = @CodigoItinerario;
 
         -- Validar que se actualizo exactamente 1 registro

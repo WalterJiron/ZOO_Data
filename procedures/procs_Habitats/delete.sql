@@ -47,7 +47,7 @@ BEGIN
 
         UPDATE Habitat SET 
             EstadoHabitat = 0, 
-            DateDelete = GETDATE()
+            DateDelete = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoHabitat = @CodigoHabitat;
 
         -- Validar que se actualizo exactamente 1 registro

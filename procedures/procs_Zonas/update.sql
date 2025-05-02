@@ -70,7 +70,8 @@ BEGIN
 
         UPDATE Zona SET
             NameZona = TRIM(@NuevoNombre),
-            Extension = @NuevaExtension
+            Extension = @NuevaExtension,
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoZona = @CodigoZona;
 
         -- Verificar que se actualizo exactamente 1 registro

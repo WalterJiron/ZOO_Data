@@ -78,7 +78,8 @@ BEGIN
         UPDATE Especie SET
             Nombre = TRIM(@NuevoNombre),
             NameCientifico = TRIM(@NuevoCientifico),
-            Descripcion = TRIM(@NuevaDescripcion)
+            Descripcion = TRIM(@NuevaDescripcion),
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoEspecie = @CodigoEspecie;
 
         -- Validar que se actualizo exactamente 1 registro

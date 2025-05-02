@@ -49,7 +49,7 @@ BEGIN
 
         UPDATE Rol SET 
             EstadoRol = 0, 
-            DateDelete = GETDATE()
+            DateDelete = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoRol = @CodigoRol;
 
         -- Validar que se actualizo exactamente 1 registro

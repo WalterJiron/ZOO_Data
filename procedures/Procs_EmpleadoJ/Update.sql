@@ -138,7 +138,8 @@ BEGIN
 			TelefonoE = @TELEFONO,
 			EmailE = @EMAIL,
 			FechaIngreso = @FECHAINGRE,
-			IdCargo = @IdCargo
+			IdCargo = @IdCargo,
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
 		WHERE CodigEmpleado = @CDE;
 
 		 -- Validar que se actualizo exactamente 1 registro

@@ -43,7 +43,7 @@ BEGIN
 		-- Actualizar el estado a inactivo
 		UPDATE Empleado set
 			EstadoEmpleado = 0,
-			DateDelete=GETDATE()--ACTUALIZAMOS SU FECHA DE ELIMINACION
+			DateDelete = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'--ACTUALIZAMOS SU FECHA DE ELIMINACION
 		WHERE CodigEmpleado = @CDE;
 
 		-- Validar que se actualizo exactamente 1 registro

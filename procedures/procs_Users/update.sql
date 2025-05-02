@@ -116,7 +116,8 @@ BEGIN
             NameUser = TRIM(@NameUser),
             Email = LOWER(TRIM(@Email)),
             Clave = HASHBYTES('SHA2_512', @Clave + LOWER(TRIM(@Email))),
-            Rol = @Rol
+            Rol = @Rol,
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoUser = @CodigoUser;
 
         -- Verificar que se actualizo exactamente 1 registro

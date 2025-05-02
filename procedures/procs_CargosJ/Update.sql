@@ -62,7 +62,8 @@ BEGIN
 		-- Actualizar los datos del cargo
 		UPDATE Cargo SET
 			NombreCargo = TRIM(@NombreC),
-			DescripCargo = TRIM(@DescripcionC)
+			DescripCargo = TRIM(@DescripcionC),
+			DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
 		WHERE CodifoCargo = @CDC;
 
 		-- Validar que se actualizo
