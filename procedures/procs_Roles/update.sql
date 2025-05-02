@@ -68,7 +68,8 @@ BEGIN
 
         UPDATE Rol SET
             NombreRol = TRIM(@NombreRol),
-            DescripRol = TRIM(@Descripcion)
+            DescripRol = TRIM(@Descripcion),
+            DateUpdate = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoRol = @CodigoRol;
 
         -- Verificar que se actualizo exactamente 1 registro
