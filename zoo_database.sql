@@ -11,8 +11,8 @@ CREATE TABLE Rol(   --- El sistema solo nos habla del rol Admin
     CodigoRol UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NombreRol NVARCHAR(50) UNIQUE NOT NULL,
     DescripRol NVARCHAR(MAX) NOT NULL,
-    DateCreate DATETIME DEFAULT GETDATE(),
-    DateDelete DATETIME,   -- Para mantener un registro de cuando se elimino
+    DateCreate DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time',
+    DateDelete DATETIMEOFFSET,   -- Para mantener un registro de cuando se elimino
     EstadoRol BIT DEFAULT 1
 );
 
@@ -25,8 +25,9 @@ CREATE TABLE Users(
     Email NVARCHAR(100) UNIQUE NOT NULL,
     Clave VARBINARY(300) NOT NULL,   -- Para encriptar con HASHBYTES(SHA2_256, clave)
     Rol UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Rol(CodigoRol) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    DateCreate DATETIME DEFAULT GETDATE(),
+    DateCreate DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time',
     DateDelete DATETIME,
+    -- AddLogin DATETIMEOFFSET,    --Ver mas adelante si se requiere
     EstadoUser BIT DEFAULT 1
 ); 
 
@@ -125,14 +126,14 @@ CREATE TABLE Empleado(
 
 GO
 
--- Tabla del detalle de los empleados (NUEVA TABLA)
+-- Tabla del detalle de los empleados 
 CREATE TABLE DetalleEmpleado(
     CodigoDetEmpleado UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     CodigEmpleado UNIQUEIDENTIFIER FOREIGN KEY REFERENCES Empleado(CodigEmpleado) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     Cedula NVARCHAR(16) CHECK(Cedula LIKE'[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][A-Z]') UNIQUE NOT NULL,
-    FechaNacimiento DATE NOT NULL,
+    FechaNacimiento DATE CHECK(FechaNacimiento <= CAST(DATEADD(YEAR, -18, GETDATE()) AS DATE)) NOT NULL,
     Genero CHAR(1) CHECK(Genero IN ('M', 'F', 'O')) NOT NULL,
-    EstadoCivil NVARCHAR(20) CHECK(EstadoCivil IN ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre')) NOT NULL,  -- Hay que ver vien 
+    EstadoCivil NVARCHAR(20) CHECK(EstadoCivil IN ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre')) NOT NULL,  
     INSS NVARCHAR(9) CHECK(INSS LIKE'[0][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]') UNIQUE NOT NULL,
     TelefonoEmergencia VARCHAR(8) CHECK(TelefonoEmergencia LIKE '[2|5|7|8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]') UNIQUE NOT NULL,
     DateCreate DATETIME DEFAULT GETDATE(),

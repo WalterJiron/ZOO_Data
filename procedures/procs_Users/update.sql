@@ -21,7 +21,7 @@ BEGIN
         END
 
         -- Validacion de nombre de usuario
-        IF LEN(TRIM(@NameUser)) < 3 AND LEN(TRIM(@NameUser)) > 50
+        IF LEN(TRIM(@NameUser)) < 3 OR LEN(TRIM(@NameUser)) > 50
         BEGIN
             SET @Mensaje = 'El nombre de usuario debe tener al menos 3 caracteres y maximo 50';
             RETURN;
@@ -33,7 +33,7 @@ BEGIN
             RETURN;
         END
 
-        IF LEN(TRIM(@Email)) < 5 AND LEN(TRIM(@Email)) > 100
+        IF LEN(TRIM(@Email)) < 5 OR LEN(TRIM(@Email)) > 100
         BEGIN
             SET @Mensaje = 'El correo debe tener al menos 5 caracteres y maximo 100';
             RETURN;

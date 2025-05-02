@@ -75,12 +75,14 @@ BEGIN
 
         IF @rol_exis IS NULL
         BEGIN
+            ROLLBACK TRANSACTION
             SET @Mensaje = 'EL codigo de rol no existe en la base de datos';
             RETURN;
         END
 
         IF @rol_exis = 0
         BEGIN
+            ROLLBACK TRANSACTION
             SET @Mensaje = 'El rol esta inactivo';
             RETURN;
         END

@@ -61,16 +61,6 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
             
-        -- Manejo especifico de errores
-        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-        
-        IF @ErrorNumber = 2627 -- Violacion de clave unica
-            SET @Mensaje = 'Error: Ya existe una zona con ese identificador';
-        ELSE IF @ErrorNumber = 1205 -- Deadlock
-            SET @Mensaje = 'Error: Intente nuevamente, el sistema estuvo ocupado';
-        ELSE
-            SET @Mensaje = 'Error al registrar zona: ' + ERROR_MESSAGE();
-            
-        -- EXEC usp_LogError; -- Opcional para registro de errores
+        SET @Mensaje = 'Error al registrar zona: ' + ERROR_MESSAGE();            
     END CATCH
 END;

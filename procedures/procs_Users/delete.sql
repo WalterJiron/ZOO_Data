@@ -42,7 +42,7 @@ BEGIN
 
         UPDATE Users SET 
             EstadoUser = 0, 
-            DateDelete = GETDATE()
+            DateDelete = SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time'
         WHERE CodigoUser = @CodigoUser;
 
         -- Validar que se actualizo exactamente 1 registro
