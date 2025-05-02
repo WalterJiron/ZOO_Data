@@ -71,6 +71,12 @@ BEGIN
             SET @Mensaje = 'El telefono debe tener 8 digitos.';
             RETURN;
         END
+
+        IF @FechaNacimiento <= CAST(DATEADD(YEAR, -18, GETDATE()) AS DATE) 
+        BEGIN
+            SET @Mensaje = 'La fecha de nacimiento no es valida. (El empleado debe ser mayor de edad)';
+            RETURN;
+        END
         
         BEGIN TRANSACTION;
 
