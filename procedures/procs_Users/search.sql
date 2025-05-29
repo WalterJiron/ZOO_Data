@@ -55,4 +55,6 @@ BEGIN
 
     -- Mandamos el nombre de usuario
     SET @Mensaje = 'OK';
+
+    INSERT INTO Login (Email) VALUES(TRIM(LOWER(@Email)))  -- Tabla de aouditoria
 END;

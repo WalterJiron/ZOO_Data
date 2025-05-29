@@ -7,7 +7,7 @@ USE ZOO;
 GO
 
 -- Tabla de Roles       
-CREATE TABLE Rol(   --- El sistema solo nos habla del rol Admin 
+CREATE TABLE Rol(   
     CodigoRol UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     NombreRol NVARCHAR(50) UNIQUE NOT NULL,
     DescripRol NVARCHAR(MAX) NOT NULL,
@@ -39,6 +39,7 @@ CREATE TABLE Login(
     CodigoLogin UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY NOT NULL,
     Email NVARCHAR(100) NOT NULL,
     DateLogin DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET() AT TIME ZONE 'Central America Standard Time',
+    Salida DATETIME2
 );
 
 GO
